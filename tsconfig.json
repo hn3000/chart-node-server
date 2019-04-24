@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": true,
+    "alwaysStrict": true,
+    "outDir": "out",
+    "rootDirs": ["src"]
+  },
+  "include": ["src"],
+  "compileOnSave": true
+}

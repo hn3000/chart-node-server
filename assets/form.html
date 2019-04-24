@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Chart Generator</title>
+    <style>
+      body {
+        font-family: Arial, Helvetica, sans-serif;
+      }
+      h1 { 
+        font-size: 20pt;
+      }
+      textarea {
+        font-family: B612, Consolas, 'Courier New', Courier, monospace;
+        font-size: 12pt;
+        width: 100%;
+        height: 40em;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Chart Generator</h1>
+<textarea>
+{
+  "data": [
+    { "v": 35, "l": "Produkt D", "vl": "35%" },
+    { "v": 25, "l": "Produkt B", "vl": "25%" },
+    { "v": 25, "l": "Produkt C", "vl": "25%" },
+    { "v": 15, "l": "Produkt A", "vl": "15%" }
+  ],
+  "meta": {
+    "value": "v",
+    "label": "vl",
+    "legend": "l"
+  },
+  "chart": {
+    "background": "#fff",
+    "width": 1000,
+    "height": 1000,
+    "cornerRadius": 0,
+    "innerRadius": 0,
+    "lineWidth": 8,
+    "stroke": "#fff",
+    "colors": [
+      "#8c2237",
+      "#cc4422",
+      "#954",
+      "#935",
+      "#953",
+      "#936"
+    ]
+  }
+}
+</textarea>
+    <div><input type="text" id="path" value="/pie/png"></div>
+    <div><button type="button">Run!</button></div>
+    <div id="status"></div>
+    <div><img></div>
+    <script>
+      function $$(x) { return document.querySelector(x); }
+      function run() {
+        let path = $$('#path').value;
+        let json = $$('textarea').value;
+        let start = Date.now();
+        let p = fetch(path, { method: 'POST', body: json, headers: [["content-type", "application/json"]] });
+        p.then(response => {if (response.status >= 400) throw(response); else return response; })
+         .then(response => response.blob())
+         .then(blob => URL.createObjectURL(blob))
+         .then(url => $$('img').src = url)
+         .then(x => null, err => err.text())
+         .then(err => { 
+           if (err) { 
+             console.log(err); 
+             $$('#status').innerHTML = err; 
+            } else {
+              $$('#status').innerHTML = `Done after ${Date.now()-start} ms.`; 
+            }
+          });
+      }
+      $$('button').addEventListener('click', run);
+    </script>
+  </body>
+</html>
