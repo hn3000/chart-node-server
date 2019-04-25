@@ -13,6 +13,10 @@ function run(argv) {
   app.get("/", function(req, res) {
     res.sendFile("index.html", { root: path.resolve(__dirname, '../assets') });
   });
+  app.get("/help-me/example/:json", function(req, res) {
+    //console.log(`GET ${req.params.json}`);
+    res.sendFile(req.params.json, { root: path.resolve(__dirname, '../example') });
+  });
   app.get("/help-me/", function(req, res) {
     res.sendFile("form.html", { root: path.resolve(__dirname, '../assets') });
   });

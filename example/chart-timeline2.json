@@ -1,23 +1,37 @@
 {
-  "meta": {
-    "value": "v",
-    "label": "vl",
-    "legend": "l",
-    "timestamp": "t"
-  },
   "chart": {
-    "background": "#333",
+    "background": "#fff",
     "width": 1000,
     "height": 700,
     "cornerRadius": 0,
     "innerRadius": 0,
     "lineWidth": 2,
-    "stroke": "#fff",
+    "stroke": "#013",
     "axis": {
       "lineWidth": 1,
-      "stroke": "#ccc",
-      "textColor": "#fff"
-    }
+      "stroke": "#888",
+      "textColor": "#333"
+    },
+    "months": [
+      "Jan.",
+      "Feb.",
+      "Mär.",
+      "Apr.",
+      "Mai",
+      "Jun.",
+      "Jul.",
+      "Aug.",
+      "Sep.",
+      "Okt.",
+      "Nov.",
+      "Dez."
+    ]
+  },
+  "meta": {
+    "value": "v",
+    "label": "vl",
+    "legend": "l",
+    "timestamp": "t"
   },
   "data": [
     {"t":1556056800000,"v":171.109},

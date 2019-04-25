@@ -1,6 +1,7 @@
 import * as d3 from 'd3';
 import { IChartSpec, IChartBody } from './api';
 import { PieArcDatum } from 'd3';
+import * as c from 'canvas';
 
 
 export interface IPieBody extends IChartBody {
@@ -14,7 +15,7 @@ interface IData {
   l: string;
 }
 
-export function renderPie(req, canvas) {
+export function renderPie(req, canvas: c.Canvas) {
   const context = canvas.getContext("2d");
   const vh = canvas.height;
   const vw = canvas.width;
@@ -83,16 +84,16 @@ export function renderPie(req, canvas) {
 
       let centroid = drawArc.centroid(x);
       let len = Math.sqrt(centroid.reduce((r, x) => r + x * x, 0));
-      let labelPos = centroid.map(t => (t / len) * outerRadius * 1.1);
+      let labelPos = centroid.map(t => (t / len) * outerRadius * 1.1) as [number, number];
       if (showLabelDebug) {
         context.moveTo(...centroid);
         context.lineTo(...labelPos);
         context.strokeStyle = "#444";
-        context.lineWith = 5;
+        context.lineWidth = 2;
         context.stroke();
       }
 
-      labelPos = centroid.map(t => (t / len) * outerRadius * 1.2);
+      labelPos = centroid.map(t => (t / len) * outerRadius * 1.2) as [number, number];
       context.font = vMin * 0.05 + "px sans-serif";
       let labelTxt = x.data.vl || `${x.value.toFixed(1)}`;
 
@@ -111,7 +112,7 @@ export function renderPie(req, canvas) {
     drawLine([[-20, 0], [20, 0]]);
     drawLine([[0, -20], [0, 20]]);
     context.strokeStyle = "#000";
-    context.lineWith = 3;
+    context.lineWidth = 3;
     context.stroke();
   }
 
@@ -132,7 +133,7 @@ export interface ITimeLineBody extends IChartBody {
 
 }
 
-export function renderTimeline(req, canvas) {
+export function renderTimeline(req, canvas: c.Canvas) {
   const context = canvas.getContext("2d");
   const vh = canvas.height;
   const vw = canvas.width;
@@ -161,18 +162,29 @@ export function renderTimeline(req, canvas) {
     minVal: Number.MAX_VALUE, 
     maxVal: Number.MIN_VALUE
   });
+
+  const vmin = Math.min(vh,vw);
+  const b = Math.floor(0.1*vmin);
+  const vwRange = [2*b,Math.ceil(vw-b)];
+  const vhRange = [Math.ceil(vh-2*b), b];
  
   const timeScale = d3.scaleTime()
                       .domain([minTime, maxTime])
-                      .range([100,vw-100]);
+                      .range(vwRange);
 
   const valueScale = d3.scaleLinear()
                       .domain([minVal, maxVal])
-                      .range([100,vh-100]);
+                      .range(vhRange);
 
-  const line = d3.line().curve(d3.curveLinear).context(context)
+  const linePainter = d3.line().context(context);
+  const line = linePainter
+                 .curve(d3.curveLinear)
                  .x(d => timeScale(getTimestamp(d)))
                  .y(d => valueScale(getValue(d)));
+
+  const axisLine = d3.line().context(context)
+                  .x(d => d[0])
+                  .y(d => d[1]);
 
   context.beginPath();
   line(data);
@@ -180,6 +192,51 @@ export function renderTimeline(req, canvas) {
   context.lineWidth = chart.lineWidth;
   context.stroke();
 
-  //const axis = d3.axisLeft(scale);
+  const timeScaleTicks = timeScale.ticks(5);
+  const timeAxisTicks = timeScaleTicks.map(timeScale);
+  
+  context.beginPath();
+  axisLine([[2*b,vhRange[0]],[vw-b,vhRange[0]]]);
+  timeAxisTicks.forEach(x => {
+    axisLine([[x,vh-2*b+5],[x,vh-2*b]])
+  });
+  context.strokeStyle = chart.axis.stroke;
+  context.lineWidth = chart.axis.lineWidth;
+  context.stroke();
+
+  const months = chart.months || 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec'.split(',');
+
+  context.beginPath();
+  context.fillStyle = chart.axis.textColor;
+  context.font = '13px Helvetica,"sans-serif"';
+  context.textBaseline = "top";
+  context.textAlign = "center";
+  timeAxisTicks.forEach((x,i) => {
+    const d = timeScaleTicks[i];
+    const label = `${months[d.getMonth()]} ${d.getFullYear() % 100}`;
+    context.fillText(label, x, vh-2*b+15);
+  });
+
+  const valueScaleTicks = valueScale.ticks(3);
+  const valueAxisTicks = valueScaleTicks.map(valueScale);
+  context.beginPath();
+  valueAxisTicks.forEach((y,i) => {
+    axisLine([[2*b,y],[vw-b, y]])
+  });
+  context.strokeStyle = chart.axis.stroke;
+  context.lineWidth = chart.axis.lineWidth;
+  context.stroke();
+
+  context.beginPath();
+  context.fillStyle = chart.axis.textColor;
+  context.font = '13px Helvetica,"sans-serif"';
+  context.textBaseline = "middle";
+  context.textAlign = "right";
+  valueAxisTicks.forEach((y,i) => {
+    const label = valueScaleTicks[i].toFixed(0);
+
+    context.fillText(label, 2*b-5, y)
+  });
+
 }
 

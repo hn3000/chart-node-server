@@ -13,70 +13,72 @@
         font-family: B612, Consolas, 'Courier New', Courier, monospace;
         font-size: 12pt;
         width: 100%;
-        height: 40em;
+        height: 15em;
       }
     </style>
   </head>
   <body>
     <h1>Chart Generator</h1>
-<textarea>
-{
-  "data": [
-    { "v": 35, "l": "Produkt D", "vl": "35%" },
-    { "v": 25, "l": "Produkt B", "vl": "25%" },
-    { "v": 25, "l": "Produkt C", "vl": "25%" },
-    { "v": 15, "l": "Produkt A", "vl": "15%" }
-  ],
-  "meta": {
-    "value": "v",
-    "label": "vl",
-    "legend": "l"
-  },
-  "chart": {
-    "background": "#fff",
-    "width": 1000,
-    "height": 1000,
-    "cornerRadius": 0,
-    "innerRadius": 0,
-    "lineWidth": 8,
-    "stroke": "#fff",
-    "colors": [
-      "#8c2237",
-      "#cc4422",
-      "#954",
-      "#935",
-      "#953",
-      "#936"
-    ]
-  }
-}
+<select id="presets"></select>
+<textarea id="json">
 </textarea>
-    <div><input type="text" id="path" value="/pie/png"></div>
+    <div><input type="text" id="path" value=""></div>
     <div><button type="button">Run!</button></div>
     <div id="status"></div>
     <div><img></div>
     <script>
-      function $$(x) { return document.querySelector(x); }
+      const presets = [
+        { label: "pie", path: "/pie/png", data: "example/chart-pie.json" },
+        { label: "pie1", path: "/pie/png", data: "example/chart-pie1.json" },
+        { label: "timeline", path: "/timeline/png", data: "example/chart-timeline.json" },
+        { label: "timeline1", path: "/timeline/png", data: "example/chart-timeline1.json" },
+        { label: "timeline2", path: "/timeline/png", data: "example/chart-timeline2.json" },
+        { label: "timeline3", path: "/timeline/png", data: "example/chart-timeline3.json" }
+      ];
+      function $1(x) { return document.querySelector(x); }
+      function $$(x) { return document.querySelectorAll(x); }
       function run() {
-        let path = $$('#path').value;
-        let json = $$('textarea').value;
+        let path = $1('#path').value;
+        let json = $1('#json').value;
         let start = Date.now();
         let p = fetch(path, { method: 'POST', body: json, headers: [["content-type", "application/json"]] });
-        p.then(response => {if (response.status >= 400) throw(response); else return response; })
+        p.then(handleStatus)
          .then(response => response.blob())
          .then(blob => URL.createObjectURL(blob))
-         .then(url => $$('img').src = url)
+         .then(url => $1('img').src = url)
          .then(x => null, err => err.text())
          .then(err => { 
            if (err) { 
              console.log(err); 
-             $$('#status').innerHTML = err; 
+             $1('#status').innerHTML = err; 
             } else {
-              $$('#status').innerHTML = `Done after ${Date.now()-start} ms.`; 
+              $1('#status').innerHTML = `Done after ${Date.now()-start} ms.`; 
             }
           });
       }
-      $$('button').addEventListener('click', run);
+      $1('button').addEventListener('click', run);
+      $1('select#presets').innerHTML = '<option>choose one</option>'+presets.map((x,i) => `<option value="${i}">${x.label}</option>`).join();
+      $1('select#presets').addEventListener('input', activatePreset);
+      function activatePreset(evt) {
+        const idx = evt && evt.target.value;
+        const preset = presets[idx || 0];
+        console.log('select ', idx, preset);
+        $1('#path').value = preset.path;
+        fetch(preset.data)
+          .then(handleStatus)
+          .then(unpackText)
+          .then(json => $1('#json').value = json);
+      }
+      function handleStatus(response) {
+        if (response.status >= 400) throw(response); 
+        else return response; 
+      }
+      function unpackText(response) {
+        return response.text();
+      }
+      function unpackJson(response) {
+        return response.json();
+      }
     </script>
   </body>
 </html>

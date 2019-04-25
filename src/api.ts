@@ -17,6 +17,13 @@ export interface IChartSpec {
   background: ColorSpec;
   stroke: string;
   lineWidth: number;
+  months?: string[];
+
+  axis?: {
+    stroke: string;
+    lineWidth: number;
+    textColor: string;
+  }
 }
 
 

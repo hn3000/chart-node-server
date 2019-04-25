@@ -36,6 +36,7 @@ WORKDIR /chart-server
 COPY --from=builder /chart-server/ .
 
 COPY assets/* ./assets/
+COPY example/chart-*json ./example/
 COPY out/* ./out/
 
 #ENV PORT 33456
