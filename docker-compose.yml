@@ -1,6 +1,10 @@
 version: '3'
 services:
   charts:
-    build: .
+    build: 
+      context: .
     ports:
-     - "3455:3456"
+     - "3456:3456"
+    environment:
+      WATERMARK: "true"
+      PORT: 3456
