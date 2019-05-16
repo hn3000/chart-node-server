@@ -1,44 +1,52 @@
 import * as d3 from 'd3';
-import { IChartSpec, IChartBody } from './api';
+import { IPieBody, IChartBody, IData } from './api';
 import { PieArcDatum } from 'd3';
 import * as c from 'canvas';
-
-
-export interface IPieBody extends IChartBody {
-  data: any[];
-}
-
-interface IData {
-  v: number;
-  c: string;
-  vl: string;
-  l: string;
-}
+import { createLegendEntry, LegendStyle, createLegend, nullShape } from './canvas-legend';
 
 export function renderPie(req, canvas: c.Canvas) {
   const context = canvas.getContext("2d");
-  const vh = canvas.height;
+  let vh = canvas.height;
   const vw = canvas.width;
-  const vMin = Math.min(vh, vw);
+  let vMin = Math.min(vh, vw);
   const vMax = Math.max(vh, vw);
 
   const defaultColors = ["#579", "#597", "#759", "#795", "#975", "#957"];
 
   const body: IPieBody = req.body;
-  const { colors=defaultColors } = req.body.chart;
-  const meta = req.body.meta;
+  const { colors=defaultColors } = body.chart;
+  const meta = body.meta;
 
   const value   = meta.value  ? (x:any) => x[meta.value]  : x => x["value"];
   const label   = meta.label  ? (x:any) => x[meta.label]  : x => x["value"];
   const legend  = meta.legend ? (x:any) => x[meta.legend] : x => x["legend"];
   const color   = meta.color  ? (x:any) => x[meta.color]  : x => x["color"];
 
-  const data = req.body.data.map((v, i) => ({
+  const data: IData[] = body.data.map((v, i) => ({
     vl: label(v) || `Label ${i}`,
     l: legend(v) || `Legend ${i}`,
     v: value(v),
     c: color(v) || colors[i % colors.length]
   }));
+
+  const {
+    labelColor = '#000',
+    showLegend = true,
+    labelFont = vMin * 0.05 + "px sans-serif"
+  } = req.body.chart;
+
+  let legendShape = nullShape();
+  if (showLegend) {
+    context.font = labelFont;
+    
+    legendShape = createLegend(canvas, data, LegendStyle.BOX, vw, labelColor);
+    const padY = Math.ceil(vMin * 0.01);
+    context.translate(0, padY);
+    legendShape.paint(canvas);
+    context.translate(0, legendShape.height);
+    vh -= legendShape.height + padY;
+    vMin = Math.min(vh,vw);
+  }
 
   const {
     innerRadius = vMin / 4,
@@ -49,12 +57,16 @@ export function renderPie(req, canvas: c.Canvas) {
     showCenter = false,
     showLabels = true,
     showLabelDebug = false,
+    showDebug = false,
     padAngle = 0,
+    startAngle = 0,
   } = req.body.chart;
+
   let makePie = d3
     .pie<IData>()
     .value(x => x.v)
-    .padAngle(padAngle);
+    .padAngle(padAngle)
+    .startAngle(startAngle);
   const pie = makePie(data);
   let drawArc = d3
     .arc<PieArcDatum<IData>>()
@@ -65,8 +77,7 @@ export function renderPie(req, canvas: c.Canvas) {
   let drawLine = d3.line().context(context);
 
   console.log(pie);
-
-  context.translate(vMin / 2, vMin / 2);
+  context.translate(vw / 2, vh / 2);
   pie.forEach(x => {
     context.beginPath();
     drawArc(x);
@@ -94,12 +105,13 @@ export function renderPie(req, canvas: c.Canvas) {
       }
 
       labelPos = centroid.map(t => (t / len) * outerRadius * 1.2) as [number, number];
-      context.font = vMin * 0.05 + "px sans-serif";
+      context.font = labelFont;
       let labelTxt = x.data.vl || `${x.value.toFixed(1)}`;
 
       context.save();
       context.textAlign = 'center';
       context.textBaseline = 'middle';
+      context.fillStyle = labelColor;
       context.fillText(labelTxt, ...labelPos);
       context.restore();
       /*
@@ -116,7 +128,7 @@ export function renderPie(req, canvas: c.Canvas) {
     context.stroke();
   }
 
-  if (vw - vMin > 100) {
+  if (showDebug) {
     context.resetTransform();
     context.translate(vMin, 0);
     context.fillStyle = "#ddd";
@@ -163,8 +175,7 @@ export function renderTimeline(req, canvas: c.Canvas) {
     maxVal: Number.MIN_VALUE
   });
 
-  const vmin = Math.min(vh,vw);
-  const b = Math.floor(0.1*vmin);
+  const b = Math.floor(0.1*vMin);
   const vwRange = [2*b,Math.ceil(vw-b)];
   const vhRange = [Math.ceil(vh-2*b), b];
  
@@ -237,6 +248,16 @@ export function renderTimeline(req, canvas: c.Canvas) {
 
     context.fillText(label, 2*b-5, y)
   });
+
+  const legendData = [{ l: 'Portfolio', c: chart.stroke, v:null, vl: null }];
+  const legendWidth = Math.abs(vwRange[1] - vwRange[0]);
+  const legend = req.body.chart.showLegend 
+               ? createLegend(canvas, legendData, LegendStyle.LINE, legendWidth, '#000')
+               : nullShape();
+
+  if (legend.height) {
+    legend.paint(canvas);
+  }
 
 }
 

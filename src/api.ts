@@ -23,11 +23,24 @@ export interface IChartSpec {
     stroke: string;
     lineWidth: number;
     textColor: string;
-  }
+  };
+  colors?: string[];
 }
 
 
 export interface IChartBody {
   meta: IChartMeta;
   chart: IChartSpec;
+}
+
+
+export interface IData {
+  v: number;
+  c: string;
+  vl: string;
+  l: string;
+}
+
+export interface IPieBody extends IChartBody {
+  data: any[];
 }
