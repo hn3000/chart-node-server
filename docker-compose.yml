@@ -1,0 +1,6 @@
+version: '3'
+services:
+  charts:
+    build: .
+    ports:
+     - "3455:3456"
