@@ -65,10 +65,12 @@ function run(argv) {
   });
 }
 
+const { WATERMARK=false} = process.env;
+
 /** @param res: express.Request */
 function createImage(painter, [writer, type], req, res) {
   //console.log(req.path, req.params, req.body);
-  let { width = 1920, height = 1080, background } = req.body.chart;
+  let { width = 1920, height = 1080, background, watermark } = req.body.chart;
   let canvas = new c.Canvas(width, height, type);
   if (null != background) {
     let context = canvas.getContext("2d");
@@ -77,6 +79,14 @@ function createImage(painter, [writer, type], req, res) {
   }
 
   painter(req, canvas);
+  if (WATERMARK || watermark) {
+    const ctx = canvas.getContext('2d');
+    ctx.resetTransform();
+    ctx.fillStyle = '#555';
+    ctx.font = '30px Courier,fixed';
+    const url = `${req.protocol}://${req.hostname}${req.originalUrl}`;
+    ctx.fillText(url, 10, height-10, width);
+  }
   writer(canvas, res);
 }
 
