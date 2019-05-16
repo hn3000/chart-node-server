@@ -44,4 +44,4 @@ COPY out/* ./out/
 
 EXPOSE 3456
 
-CMD ls -l && node out/index.js
+CMD node out/index.js
