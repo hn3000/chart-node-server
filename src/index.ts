@@ -72,20 +72,33 @@ function createImage(painter, [writer, type], req, res) {
   //console.log(req.path, req.params, req.body);
   let { width = 1920, height = 1080, background, watermark } = req.body.chart;
   let canvas = new c.Canvas(width, height, type);
+  const ctx = canvas.getContext('2d');
+  ctx.save();
   if (null != background) {
-    let context = canvas.getContext("2d");
-    context.fillStyle = background;
-    context.fillRect(0, 0, width, height);
+    ctx.fillStyle = background;
+    ctx.fillRect(0, 0, width, height);
+    ctx.restore();
+    ctx.save();
   }
 
   painter(req, canvas);
   if (WATERMARK || watermark) {
     const ctx = canvas.getContext('2d');
+    let i = 0;
+    try {
+      for (i = 0; i < 100; ++i) {
+        ctx.restore();
+      }
+    } catch(e) {
+      console.log(`trying to restore, ${i}`, e);
+    }
     ctx.resetTransform();
-    ctx.fillStyle = '#555';
+    ctx.fillStyle = (typeof watermark === 'string') ? watermark : '#678';
     ctx.font = '30px Courier,fixed';
-    const url = `${req.protocol}://${req.hostname}${req.originalUrl}`;
-    ctx.fillText(url, 10, height-10, width);
+    const url = `${req.protocol}://${req.get('Host')}${req.originalUrl}`;
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'alphabetic';
+    ctx.fillText(url, 10, canvas.height - 10, width);
   }
   writer(canvas, res);
 }
