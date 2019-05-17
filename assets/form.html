@@ -60,9 +60,17 @@
       $1('button').addEventListener('click', run);
       $1('select#presets').innerHTML = '<option>choose one</option>'+presets.map((x,i) => `<option value="${i}">${x.label}</option>`).join();
       $1('select#presets').addEventListener('input', activatePreset);
+      // Edge does not send input event
+      // https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/4660045/
+      $$('select#presets option').forEach(o => o.addEventListener('click', activatePreset));
+      let activePreset = null;
       function activatePreset(evt) {
         const idx = evt && evt.target.value;
         const preset = presets[idx || 0];
+        if (activePreset === preset) {
+          return;
+        }
+        activePreset = preset;
         console.log('select ', idx, preset);
         $1('#path').value = preset.path;
         fetch(preset.data)
