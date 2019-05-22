@@ -2,14 +2,12 @@ import * as d3 from 'd3';
 import { IPieBody, IChartBody, IData } from './api';
 import { PieArcDatum } from 'd3';
 import * as c from 'canvas';
-import { createLegendEntry, LegendStyle, createLegend, nullShape } from './canvas-legend';
+import { LegendStyle, createLegend, nullShape } from './canvas-legend';
+import { IUnitFactors, dimension, dimensionProxy } from './dimension';
+import { box, IBox } from './position';
 
-export function renderPie(req, canvas: c.Canvas) {
+export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
-  let vh = canvas.height;
-  const vw = canvas.width;
-  let vMin = Math.min(vh, vw);
-  const vMax = Math.max(vh, vw);
 
   const defaultColors = ["#579", "#597", "#759", "#795", "#975", "#957"];
 
@@ -29,31 +27,64 @@ export function renderPie(req, canvas: c.Canvas) {
     c: color(v) || colors[i % colors.length]
   }));
 
+  const defaultDimensions = { 
+    labelFontSize: '5vmin',
+    legendFontSize: '4vmin',
+    padX: '1vmin',
+    padY: '1vmin',
+    innerRadius: '25vmin',
+    outerRadius: '33vmin',
+    cornerRadius: 0,
+    lineWidth: 0
+  };
+
+
+  const dimensions = dimensionProxy(req.body.chart, defaultDimensions, () => env0);
+  const { labelFontSize, legendFontSize, padY, padX } = dimensions;
   const {
     labelColor = '#000',
     showLegend = true,
-    labelFont = vMin * 0.05 + "px sans-serif"
+    labelFontFamily = "sans-serif",
+    legendFontFamily = labelFontFamily,
+    labelFont = `${labelFontSize.value()}px ${labelFontFamily}`,
+    legendFont = `${legendFontSize.value()}px ${legendFontFamily}`,
+    legendPosition = 'bottom'
   } = req.body.chart;
 
+  const env1 = { ...env0, em: labelFontSize.value()};
+
+  const chartBox = box(0, 0, '100vw', '100vh').insideBox(padX, padY).resolve(env1);
+  console.log(`chart box ${chartBox.left()} ${chartBox.top()} ${chartBox.right()} ${chartBox.bottom()}`);
+  let pieBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(chartBox.width())).resolve(env1);
+  console.log(`pie box ${pieBox.left()} ${pieBox.top()} ${pieBox.right()} ${pieBox.bottom()}`);
   let legendShape = nullShape();
   if (showLegend) {
     context.font = labelFont;
     
-    legendShape = createLegend(canvas, data, LegendStyle.BOX, vw, labelColor);
-    const padY = Math.ceil(vMin * 0.01);
-    context.translate(0, padY);
+    legendShape = createLegend(canvas, data, LegendStyle.BOX, chartBox.width(), labelColor);
+
+    let legendBox: IBox;
+    if ('top' == legendPosition) {
+      legendBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(legendShape.height)).resolve(env1);
+      pieBox = box(legendBox.bottomLeft(), chartBox.bottomRight()).resolve(env1);
+    } else {
+      legendBox = box(pieBox.bottomLeft(), chartBox.bottomRight()).resolve(env1);
+    }
+
+    context.save();
+    context.translate(legendBox.left(), legendBox.top());
     legendShape.paint(canvas);
-    context.translate(0, legendShape.height);
-    vh -= legendShape.height + padY;
-    vMin = Math.min(vh,vw);
+    context.restore();
   }
 
   const {
-    innerRadius = vMin / 4,
-    outerRadius = vMin / 3,
-    cornerRadius = 0,
+    innerRadius,
+    outerRadius,
+    cornerRadius,
+    lineWidth
+  } = dimensions;
+  const {
     stroke = "#fff",
-    lineWidth = 0,
     showCenter = false,
     showLabels = true,
     showLabelDebug = false,
@@ -70,22 +101,23 @@ export function renderPie(req, canvas: c.Canvas) {
   const pie = makePie(data);
   let drawArc = d3
     .arc<PieArcDatum<IData>>()
-    .innerRadius(innerRadius)
-    .outerRadius(outerRadius)
-    .cornerRadius(cornerRadius)
+    .innerRadius(innerRadius.value())
+    .outerRadius(outerRadius.value())
+    .cornerRadius(cornerRadius.value())
     .context(context);
   let drawLine = d3.line().context(context);
 
-  console.log(pie);
-  context.translate(vw / 2, vh / 2);
+  //console.log(pie);
+  console.log('pos', pieBox.center().x(), pieBox.center().y());
+  context.translate(pieBox.center().x(), pieBox.center().y());
   pie.forEach(x => {
     context.beginPath();
     drawArc(x);
     context.fillStyle = x.data.c;
     context.fill();
 
-    if (lineWidth > 0) {
-      context.lineWidth = lineWidth;
+    if (lineWidth.value() > 0) {
+      context.lineWidth = lineWidth.value();
       context.strokeStyle = stroke;
       context.stroke();
     }
@@ -95,7 +127,7 @@ export function renderPie(req, canvas: c.Canvas) {
 
       let centroid = drawArc.centroid(x);
       let len = Math.sqrt(centroid.reduce((r, x) => r + x * x, 0));
-      let labelPos = centroid.map(t => (t / len) * outerRadius * 1.1) as [number, number];
+      let labelPos = centroid.map(t => (t / len) * outerRadius.value() * 1.1) as [number, number];
       if (showLabelDebug) {
         context.moveTo(...centroid);
         context.lineTo(...labelPos);
@@ -104,7 +136,7 @@ export function renderPie(req, canvas: c.Canvas) {
         context.stroke();
       }
 
-      labelPos = centroid.map(t => (t / len) * outerRadius * 1.2) as [number, number];
+      labelPos = centroid.map(t => (t / len) * outerRadius.value() * 1.2) as [number, number];
       context.font = labelFont;
       let labelTxt = x.data.vl || `${x.value.toFixed(1)}`;
 
@@ -129,15 +161,17 @@ export function renderPie(req, canvas: c.Canvas) {
   }
 
   if (showDebug) {
+    let codeBox = box(chartBox.topRight().leftBy(150), chartBox.bottomRight());
     context.resetTransform();
-    context.translate(vMin, 0);
+    context.translate(codeBox.left(), codeBox.top());
     context.fillStyle = "#ddd";
-    context.fillRect(0, 0, vw - vMin, vh);
-    context.font = '13px Helvetica,"sans-serif"';
+    context.fillRect(0, 0, codeBox.width(), codeBox.height());
+    context.font = '11px Helvetica,"sans-serif"';
     context.fillStyle = "#000";
 
     const text = JSON.stringify(data, null, 2);
-    context.fillText(text, 10, 20, vw - vMin - 20);
+    codeBox = codeBox.insideBox(10);
+    context.fillText(text, codeBox.left(), codeBox.top(), codeBox.width());
   }
 }
 

@@ -3,6 +3,8 @@ import * as express from 'express';
 import * as path from 'path';
 
 import { renderPie, renderTimeline } from './painter-d3';
+import { UnitFactorsDefault, dimension, dimensionProxy } from './dimension';
+import { box, position } from './position';
 
 function run(argv) {
   console.log("starting express");
@@ -18,7 +20,7 @@ function run(argv) {
     res.sendFile(req.params.json, { root: path.resolve(__dirname, '../example') });
   });
   app.get("/help-me/", function(req, res) {
-    res.sendFile("form.html", { root: path.resolve(__dirname, '../assets') });
+      res.sendFile("form.html", { root: path.resolve(__dirname, '../assets') });
   });
 
   const styles = {
@@ -70,18 +72,32 @@ const { WATERMARK=false} = process.env;
 /** @param res: express.Request */
 function createImage(painter, [writer, type], req, res) {
   //console.log(req.path, req.params, req.body);
-  let { width = 1920, height = 1080, background, watermark } = req.body.chart;
-  let canvas = new c.Canvas(width, height, type);
+  let { background, watermark } = req.body.chart;
+  let { width, height } = dimensionProxy(req.body.chart, { width: 1920, height: 1080 });
+  let canvas = new c.Canvas(width.value(), height.value(), type);
   const ctx = canvas.getContext('2d');
   ctx.save();
   if (null != background) {
     ctx.fillStyle = background;
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(0, 0, width.value(), height.value() );
     ctx.restore();
     ctx.save();
   }
 
-  painter(req, canvas);
+  const env0 = { 
+    vh: height.value()/100, 
+    vw: width.value() / 100, 
+    vmin: Math.min(height.value(), width.value()) / 100, 
+    vmax: Math.max(height.value(), width.value()) / 100,
+    ...UnitFactorsDefault
+  };
+
+  painter(req, canvas, env0);
+  maybeRenderWatermark(req, canvas, watermark, width, height, env0);
+  writer(canvas, res);
+}
+
+function maybeRenderWatermark(req, canvas, watermark, width, height, env0) {
   if (WATERMARK || watermark) {
     const ctx = canvas.getContext('2d');
     let i = 0;
@@ -90,17 +106,39 @@ function createImage(painter, [writer, type], req, res) {
         ctx.restore();
       }
     } catch(e) {
-      console.log(`trying to restore, ${i}`, e);
+      console.log(`exception trying to restore (${i})`, e);
     }
     ctx.resetTransform();
-    ctx.fillStyle = (typeof watermark === 'string') ? watermark : '#678';
-    ctx.font = '30px Courier,fixed';
+    
+    const defConfig = { 
+      fontSize: '3vmin'
+    };
+    let wmConfig = defConfig as any;
+    if (typeof watermark === 'object') {
+      wmConfig = watermark;
+    }
+    const config = dimensionProxy(wmConfig, defConfig, () => env0);
+
+    const { fontSize } = config;
+    const { 
+      fontFamily = 'Courier,fixed', 
+      fillStyle = (typeof watermark === 'string') ? watermark : '#678'
+    } = wmConfig;
+    
+    ctx.fillStyle = fillStyle;
+    const font =  `${fontSize.value()}px ${fontFamily}`;
+    console.log(font);
+    ctx.font = font;
     const url = `${req.protocol}://${req.get('Host')}${req.originalUrl}`;
+
+    const env1 = { ...env0, em: fontSize.value() };
+    const wmbox = box(position(0,0), position(width, height)).resolve(env1).insideBox('1em');
+    const pos = wmbox.bottomLeft();
+    console.log('bottom left', pos.x(), pos.y(), dimension('1em').value(env1));
     ctx.textAlign = 'left';
     ctx.textBaseline = 'alphabetic';
-    ctx.fillText(url, 10, canvas.height - 10, width);
+    ctx.fillText(url, pos.x(), pos.y(), wmbox.width());
   }
-  writer(canvas, res);
 }
 
 function writePNG(canvas, res) {

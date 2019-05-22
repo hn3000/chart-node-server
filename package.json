@@ -7,7 +7,10 @@
     "prestart": "tsc",
     "start": "node out/index",
     "prepare": "tsc",
-    "pare": " "
+    "tsc": "tsc",
+    "pretest": "tsc -p tsconfig.test.json",
+    "test": "node out-test/test/all-tests",
+    "cover": "nyc npm test"
   },
   "keywords": [
     "chart",
@@ -27,6 +30,28 @@
     "@types/chart.js": "^2.7.52",
     "@types/d3": "^5.7.2",
     "@types/express": "^4.16.1",
-    "typescript": "^3.4.5"
+    "typescript": "^3.4.5",
+    "nyc": "^14.1.1",
+    "tsunit.external": "^2.1.1"
+  },
+  "nyc": {
+    "all": true,
+    "excludeAfterRemap": false,
+    "extension": [
+      ".js",
+      ".ts"
+    ],
+    "include": [
+      "out-test/src/**",
+      "src/*.ts"
+    ],
+    "exclude": [
+      "test/**",
+      "out-test/test/**"
+    ],
+    "reporter": [
+      "text",
+      "html"
+    ]
   }
 }
