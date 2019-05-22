@@ -12,13 +12,19 @@
     "timestamp": "t"
   },
   "chart": {
+    "showLegend": true,
+    "legendPosition": "bottom",
+    "legendFontSize": "2vmin",
+    "labelFontSize": "3vmin",
+    "padX": "1em",
+    "padY": "1em",
+    "lineWidth": "1vmin",
     "labelColor": "#fff",
     "background": "#333",
-    "width": 1000,
-    "height": 1000,
+    "width": 300,
+    "height": 300,
     "cornerRadius": 0,
     "innerRadius": 0,
-    "lineWidth": 8,
     "stroke": "#fff",
     "colors": [
       "#8c2237",
