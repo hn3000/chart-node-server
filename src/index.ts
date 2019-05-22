@@ -20,7 +20,12 @@ function run(argv) {
     res.sendFile(req.params.json, { root: path.resolve(__dirname, '../example') });
   });
   app.get("/help-me/", function(req, res) {
+    if (req.originalUrl.endsWith('/')) {
       res.sendFile("form.html", { root: path.resolve(__dirname, '../assets') });
+    } else {
+      res.setHeader('Location', '/help-me/');
+      res.sendStatus(301);
+    }
   });
 
   const styles = {

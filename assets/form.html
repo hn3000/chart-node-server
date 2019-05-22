@@ -68,10 +68,11 @@
         const idx = evt && evt.target.value;
         const preset = presets[idx || 0];
         if (activePreset === preset) {
+          //console.log('preset already active:', preset);
           return;
         }
         activePreset = preset;
-        console.log('select ', idx, preset);
+        console.log('activating preset:', idx, preset);
         $1('#path').value = preset.path;
         fetch(preset.data)
           .then(handleStatus)
