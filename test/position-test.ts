@@ -71,7 +71,7 @@ export class PositionTest extends TestClass {
     }
 
     testInsideBoxIsSmaller() {
-        let b = box(position(1,2),position(33,44)).insideBox(1);
+        let b = box(1,2,33,44).insideBox(1);
         this.areIdentical(2, b.left());
         this.areIdentical(3, b.top());
         this.areIdentical(32, b.right());

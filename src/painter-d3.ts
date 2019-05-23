@@ -42,7 +42,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
 
 
   const dimensions = dimensionProxy(req.body.chart, defaultDimensions, () => env0);
-  const { labelFontSize, legendFontSize, padY, padX } = dimensions;
+  const { labelFontSize, legendFontSize, padX, padY } = dimensions;
   const {
     labelColor = '#000',
     showLegend = true,
@@ -50,15 +50,16 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     legendFontFamily = labelFontFamily,
     labelFont = `${labelFontSize.value()}px ${labelFontFamily}`,
     legendFont = `${legendFontSize.value()}px ${legendFontFamily}`,
-    legendPosition = 'bottom'
+    legendPosition = 'bottom',
+    showDebug = false,
   } = req.body.chart;
 
   const env1: IUnitFactors = { ...env0, em: labelFontSize.value()};
 
-  const chartBox = box(0, 0, '100vw', '100vh').insideBox(padX, padY).resolve(env1);
-  //console.log(`chart box ${chartBox.left()} ${chartBox.top()} ${chartBox.right()} ${chartBox.bottom()}`);
+  const chartBox = box(0, 0, canvas.width, canvas.height).insideBox(padX, padY).resolve(env1);
+  console.log(`chart box ${chartBox.left()} ${chartBox.top()} ${chartBox.right()} ${chartBox.bottom()}`);
   let pieBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(chartBox.width())).resolve(env1);
-  //console.log(`pie box ${pieBox.left()} ${pieBox.top()} ${pieBox.right()} ${pieBox.bottom()}`);
+  console.log(`pie box ${pieBox.left()} ${pieBox.top()} ${pieBox.right()} ${pieBox.bottom()}`);
   let legendShape = nullShape();
   if (showLegend) {
     context.font = legendFont;
@@ -70,19 +71,26 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
       legendBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(legendShape.height)).resolve(env1);
       pieBox = box(legendBox.bottomLeft(), chartBox.bottomRight()).resolve(env1);
     } else {
-      legendBox = box(chartBox.bottomLeft().aboveBy(legendShape.height), chartBox.bottomRight()).resolve(env1);
-      pieBox = box(legendBox.topLeft(), chartBox.topRight()).resolve(env1);
+      let pieHeight = Math.min(chartBox.width(), chartBox.height() - legendShape.height);
+      pieBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(pieHeight)).resolve(env1);
+      legendBox = box(pieBox.bottomLeft(), chartBox.bottomRight()).resolve(env1);
     }
 
     context.save();
     context.translate(legendBox.left(), legendBox.top());
     legendShape.paint(canvas);
+    if (showDebug) {
+      context.strokeStyle = '#fff';
+      context.strokeRect(0,0, legendBox.width(), legendBox.height());
+    }
     context.restore();
 
-    env1.vw = pieBox.width();
-    env1.vh = pieBox.height();
+    env1.vw = pieBox.width() / 100;
+    env1.vh = pieBox.height() / 100;
     env1.vmin = Math.min(env1.vw, env1.vh);
   }
+
+  const pieDimensions = dimensionProxy(req.body.chart, defaultDimensions, () => env1);
 
   const {
     innerRadius,
@@ -91,20 +99,20 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     lineWidth,
     padAngle,
     startAngle,
-  } = dimensions;
+  } = pieDimensions;
+
   const {
     stroke = "#fff",
     showCenter = false,
     showLabels = true,
     showLabelDebug = false,
-    showDebug = false,
   } = req.body.chart;
 
   let makePie = d3
     .pie<IData>()
     .value(x => x.v)
-    .padAngle(padAngle)
-    .startAngle(startAngle);
+    .padAngle(padAngle.value())
+    .startAngle(startAngle.value());
   const pie = makePie(data);
   let drawArc = d3
     .arc<PieArcDatum<IData>>()
@@ -167,6 +175,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     context.stroke();
   }
 
+/*
   if (showDebug) {
     let codeBox = box(chartBox.topRight().leftBy(150), chartBox.bottomRight());
     context.resetTransform();
@@ -180,6 +189,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     codeBox = codeBox.insideBox(10);
     context.fillText(text, codeBox.left(), codeBox.top(), codeBox.width());
   }
+*/
 }
 
 export interface ITimeLineBody extends IChartBody {
