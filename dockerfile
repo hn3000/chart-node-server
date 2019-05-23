@@ -1,4 +1,4 @@
-FROM node:alpine as base
+FROM node:11-alpine as base
 
 RUN npm config set unsafe-perm true
 
