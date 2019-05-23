@@ -35,7 +35,9 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     innerRadius: '25vmin',
     outerRadius: '33vmin',
     cornerRadius: 0,
-    lineWidth: 0
+    lineWidth: 0,
+    startAngle: 0,
+    padAngle: 0
   };
 
 
@@ -51,15 +53,15 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     legendPosition = 'bottom'
   } = req.body.chart;
 
-  const env1 = { ...env0, em: labelFontSize.value()};
+  const env1: IUnitFactors = { ...env0, em: labelFontSize.value()};
 
   const chartBox = box(0, 0, '100vw', '100vh').insideBox(padX, padY).resolve(env1);
-  console.log(`chart box ${chartBox.left()} ${chartBox.top()} ${chartBox.right()} ${chartBox.bottom()}`);
+  //console.log(`chart box ${chartBox.left()} ${chartBox.top()} ${chartBox.right()} ${chartBox.bottom()}`);
   let pieBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(chartBox.width())).resolve(env1);
-  console.log(`pie box ${pieBox.left()} ${pieBox.top()} ${pieBox.right()} ${pieBox.bottom()}`);
+  //console.log(`pie box ${pieBox.left()} ${pieBox.top()} ${pieBox.right()} ${pieBox.bottom()}`);
   let legendShape = nullShape();
   if (showLegend) {
-    context.font = labelFont;
+    context.font = legendFont;
     
     legendShape = createLegend(canvas, data, LegendStyle.BOX, chartBox.width(), labelColor);
 
@@ -68,20 +70,27 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
       legendBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(legendShape.height)).resolve(env1);
       pieBox = box(legendBox.bottomLeft(), chartBox.bottomRight()).resolve(env1);
     } else {
-      legendBox = box(pieBox.bottomLeft(), chartBox.bottomRight()).resolve(env1);
+      legendBox = box(chartBox.bottomLeft().aboveBy(legendShape.height), chartBox.bottomRight()).resolve(env1);
+      pieBox = box(legendBox.topLeft(), chartBox.topRight()).resolve(env1);
     }
 
     context.save();
     context.translate(legendBox.left(), legendBox.top());
     legendShape.paint(canvas);
     context.restore();
+
+    env1.vw = pieBox.width();
+    env1.vh = pieBox.height();
+    env1.vmin = Math.min(env1.vw, env1.vh);
   }
 
   const {
     innerRadius,
     outerRadius,
     cornerRadius,
-    lineWidth
+    lineWidth,
+    padAngle,
+    startAngle,
   } = dimensions;
   const {
     stroke = "#fff",
@@ -89,8 +98,6 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     showLabels = true,
     showLabelDebug = false,
     showDebug = false,
-    padAngle = 0,
-    startAngle = 0,
   } = req.body.chart;
 
   let makePie = d3

@@ -164,7 +164,7 @@ class DimensionRelative extends DimensionBaseNeg implements IDimension {
   private _delta: IDimension;
 }
 
-const dimensionRegEx = /^(\d+(?:\.\d*)?)\s*(\w*)$/;
+const dimensionRegEx = /^(\-?\d+(?:\.\d*)?)\s*(\w*)$/;
 
 export class Dimension extends DimensionBaseNeg implements IDimension {
   static parse(text: string): IDimension {

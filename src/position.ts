@@ -240,11 +240,11 @@ export class Box implements IBox {
 export function box(left: DimensionSpec, top: DimensionSpec, right: DimensionSpec, bottom: DimensionSpec): IBox;
 export function box(pos1: IPosition, pos2: IPosition): IBox;
 export function box(): IBox {
-    if (arguments.length == 2) {
+    if (arguments.length === 2) {
         let [ pos1, pos2 ] = arguments;
         return new Box(pos1, pos2);
     }
-    if (arguments.length == 4) {
+    if (arguments.length === 4) {
         let [ left, top, right, bottom ] = arguments;
         return new Box(position(left, top), position(right, bottom));
     }
