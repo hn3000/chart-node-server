@@ -66,7 +66,7 @@ function run(argv) {
       let port = a.port;
       let host = a.address;
       console.log(
-        `listening, try http://localhost:${port}/ or http://${host}:${port}/`
+        `listening, try http://localhost:${port}/help-me/ or http://${host}:${port}/help-me/`
       );
     }
   });
