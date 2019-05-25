@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { IPieBody, IChartBody, IData } from './api';
+import { IPieBody, IChartBody, IData, IChartSpec } from './api';
 import { PieArcDatum } from 'd3';
 import * as c from 'canvas';
 import { LegendStyle, createLegend, nullShape } from './canvas-legend';
@@ -193,15 +193,11 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
 }
 
 export interface ITimeLineBody extends IChartBody {
-
+  chart: IChartSpec & { seriesLabel: string; }
 }
 
-export function renderTimeline(req, canvas: c.Canvas) {
+export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
-  const vh = canvas.height;
-  const vw = canvas.width;
-  const vMin = Math.min(vh, vw);
-  const vMax = Math.max(vh, vw);
 
   const body: ITimeLineBody = req.body;
   const meta = body.meta;
@@ -226,17 +222,67 @@ export function renderTimeline(req, canvas: c.Canvas) {
     maxVal: Number.MIN_VALUE
   });
 
-  const b = Math.floor(0.1*vMin);
-  const vwRange = [2*b,Math.ceil(vw-b)];
-  const vhRange = [Math.ceil(vh-2*b), b];
- 
-  const timeScale = d3.scaleTime()
-                      .domain([minTime, maxTime])
-                      .range(vwRange);
+  const dimDefaults = {
+    padX: '2vmin',
+    //padY: '1vmin', // commented: let's use padX as default
+    labelFontSize: '2.5vmin',
+    tickLength: '1.5vmin',
+    lineWidth: '2px'
+  };
+  const dimensions = dimensionProxy(chart, dimDefaults, () => env0);
+  const {
+    padX,
+    padY = padX,
+    labelFontSize,
+    lineWidth,
+    tickLength
+  } = dimensions;
+  const { 
+    labelFontFamily = 'Helvetica,"sans-serif"',
+    months = 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec'.split(','),
+    labelPrecision = 2,
+    seriesLabel = ''
+  } = chart;
 
-  const valueScale = d3.scaleLinear()
-                      .domain([minVal, maxVal])
-                      .range(vhRange);
+  const dateLabel = (d: Date) => {
+    return `${months[d.getMonth()]} ${d.getFullYear() % 100}`;
+  };
+
+  const chartBox = box(0,0, canvas.width, canvas.height).insideBox(padX, padY).resolve(env0);
+  const labelFont = `${labelFontSize.value()}px ${labelFontFamily}`
+ 
+  const valueScaleU = d3.scaleLinear().domain([minVal, maxVal]);
+  const timeScaleU = d3.scaleTime().domain([minTime, maxTime])
+
+  const timeScaleTicks = timeScaleU.ticks(5);
+  const valueScaleTicks = valueScaleU.ticks(3);
+
+  // set up label font
+
+  context.font = labelFont;
+  context.textBaseline = "top";
+
+  const timeScaleLabelHeight = timeScaleTicks.reduce((r,date) => {
+    let label = dateLabel(date);
+    let tm = context.measureText(label);
+    return Math.max(tm.actualBoundingBoxDescent, r);
+  }, 0)
+
+  const valueScaleLabelWidth = valueScaleTicks.reduce((r,value) => {
+    let label = value.toFixed(labelPrecision);
+    let tm = context.measureText(label);
+    return Math.max(tm.width, r);
+  }, 0);
+
+  const xLabelBox = box(chartBox.bottomLeft().aboveBy(timeScaleLabelHeight+tickLength.value()*2), chartBox.bottomRight()).resolve(env0);
+  const yLabelBox = box(chartBox.topLeft().rightBy(valueScaleLabelWidth+tickLength.value()*2), chartBox.bottomLeft()).resolve(env0);
+
+  const plotBox = box(yLabelBox.topRight(), xLabelBox.topRight()).resolve(env0);
+
+  const vhRange = [ plotBox.bottom(), plotBox.top() ];
+  const vwRange = [ plotBox.left(), plotBox.right() ];
+  const valueScale = valueScaleU.range(vhRange);
+  const timeScale = timeScaleU.range(vwRange);
 
   const linePainter = d3.line().context(context);
   const line = linePainter
@@ -251,39 +297,34 @@ export function renderTimeline(req, canvas: c.Canvas) {
   context.beginPath();
   line(data);
   context.strokeStyle = chart.stroke;
-  context.lineWidth = chart.lineWidth;
+  context.lineWidth = lineWidth.value();
   context.stroke();
 
-  const timeScaleTicks = timeScale.ticks(5);
   const timeAxisTicks = timeScaleTicks.map(timeScale);
   
   context.beginPath();
-  axisLine([[2*b,vhRange[0]],[vw-b,vhRange[0]]]);
+  axisLine([[plotBox.left(),plotBox.bottom()],[plotBox.right(),plotBox.bottom()]]);
   timeAxisTicks.forEach(x => {
-    axisLine([[x,vh-2*b+5],[x,vh-2*b]])
+    axisLine([[x,plotBox.bottom()+tickLength.value()],[x,plotBox.bottom()]])
   });
   context.strokeStyle = chart.axis.stroke;
   context.lineWidth = chart.axis.lineWidth;
   context.stroke();
 
-  const months = chart.months || 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec'.split(',');
-
   context.beginPath();
   context.fillStyle = chart.axis.textColor;
-  context.font = '13px Helvetica,"sans-serif"';
   context.textBaseline = "top";
   context.textAlign = "center";
   timeAxisTicks.forEach((x,i) => {
     const d = timeScaleTicks[i];
-    const label = `${months[d.getMonth()]} ${d.getFullYear() % 100}`;
-    context.fillText(label, x, vh-2*b+15);
+    const label = dateLabel(d);
+    context.fillText(label, x, xLabelBox.top() + tickLength.value() * 2);
   });
 
-  const valueScaleTicks = valueScale.ticks(3);
   const valueAxisTicks = valueScaleTicks.map(valueScale);
   context.beginPath();
   valueAxisTicks.forEach((y,i) => {
-    axisLine([[2*b,y],[vw-b, y]])
+    axisLine([[yLabelBox.right()-tickLength.value(),y],[plotBox.right(), y]])
   });
   context.strokeStyle = chart.axis.stroke;
   context.lineWidth = chart.axis.lineWidth;
@@ -291,18 +332,18 @@ export function renderTimeline(req, canvas: c.Canvas) {
 
   context.beginPath();
   context.fillStyle = chart.axis.textColor;
-  context.font = '13px Helvetica,"sans-serif"';
-  context.textBaseline = "middle";
-  context.textAlign = "right";
+  context.font = labelFont;
+  context.textBaseline = 'middle';
+  context.textAlign = 'right';
   valueAxisTicks.forEach((y,i) => {
-    const label = valueScaleTicks[i].toFixed(0);
+    const label = valueScaleTicks[i].toFixed(labelPrecision);
 
-    context.fillText(label, 2*b-5, y)
+    context.fillText(label, yLabelBox.right()-2*tickLength.value(), y);
   });
 
-  const legendData = [{ l: 'Portfolio', c: chart.stroke, v:null, vl: null }];
+  const legendData = [{ l: seriesLabel, c: chart.stroke, v:null, vl: null }];
   const legendWidth = Math.abs(vwRange[1] - vwRange[0]);
-  const legend = req.body.chart.showLegend 
+  const legend = req.body.chart.showLegend && seriesLabel 
                ? createLegend(canvas, legendData, LegendStyle.LINE, legendWidth, '#000')
                : nullShape();
 

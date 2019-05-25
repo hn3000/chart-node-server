@@ -14,9 +14,15 @@ export type ColorSpec = string | IColorRGBA; // '#ddd', 'rgb(1,2,3,0.1)'
 export interface IChartSpec {
   width: number;
   height: number;
-  background: ColorSpec;
+  padX: string|number;
+  padY: string|number;
+  background: string;
   stroke: string;
-  lineWidth: number;
+  lineWidth?: number|string;
+  labelFontSize?: string|number;
+  labelFontFamily?: string;
+
+  labelPrecision?: number;
   months?: string[];
 
   axis?: {
