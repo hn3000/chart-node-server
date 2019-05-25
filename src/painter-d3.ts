@@ -308,7 +308,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     axisLine([[x,plotBox.bottom()+tickLength.value()],[x,plotBox.bottom()]])
   });
   context.strokeStyle = chart.axis.stroke;
-  context.lineWidth = chart.axis.lineWidth;
+  context.lineWidth = dimension(chart.axis.lineWidth).resolve(env0).value();
   context.stroke();
 
   context.beginPath();
@@ -341,13 +341,15 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     context.fillText(label, yLabelBox.right()-2*tickLength.value(), y);
   });
 
+  const { textColor = '#000' } = chart.axis || {};
   const legendData = [{ l: seriesLabel, c: chart.stroke, v:null, vl: null }];
-  const legendWidth = Math.abs(vwRange[1] - vwRange[0]);
+  const legendWidth = Math.abs(plotBox.width());
   const legend = req.body.chart.showLegend && seriesLabel 
-               ? createLegend(canvas, legendData, LegendStyle.LINE, legendWidth, '#000')
+               ? createLegend(canvas, legendData, LegendStyle.LINE, legendWidth, textColor)
                : nullShape();
 
   if (legend.height) {
+    context.translate(plotBox.left(), plotBox.top());
     legend.paint(canvas);
   }
 

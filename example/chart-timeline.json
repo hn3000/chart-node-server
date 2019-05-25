@@ -13,6 +13,8 @@
     "innerRadius": 0,
     "lineWidth": 2,
     "stroke": "#fff",
+    "seriesLabel": "Data",
+    "showLegend": false,
     "axis": {
       "lineWidth": 1,
       "stroke": "#ccc",

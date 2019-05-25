@@ -101,6 +101,8 @@ export function createLegendEntry(
       marker.paint(canvas);
       ctx.restore();
       ctx.fillStyle = textColor;
+      ctx.textBaseline = 'alphabetic';
+      ctx.textAlign = 'left';
       ctx.fillText(text, textX, textY, textMetrics.width);
     }
   } as IShape;
