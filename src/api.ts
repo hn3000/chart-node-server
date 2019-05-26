@@ -30,6 +30,12 @@ export interface IChartSpec {
     lineWidth: number;
     textColor: string;
   };
+  timeAxis?: {
+    position: 'top' | 'bottom';
+  };
+  valueAxis?: {
+    position: 'left';
+  }
   colors?: string[];
 }
 

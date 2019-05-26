@@ -244,6 +244,14 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     seriesLabel = ''
   } = chart;
 
+  const {
+    position: timeAxisPosition = 'top'
+  } = chart.timeAxis || { };
+
+  const {
+    position: valueAxisPosition = 'left'
+  } = chart.valueAxis || { };
+
   const dateLabel = (d: Date) => {
     return `${months[d.getMonth()]} ${d.getFullYear() % 100}`;
   };
@@ -274,10 +282,26 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     return Math.max(tm.width, r);
   }, 0);
 
-  const xLabelBox = box(chartBox.bottomLeft().aboveBy(timeScaleLabelHeight+tickLength.value()*2), chartBox.bottomRight()).resolve(env0);
-  const yLabelBox = box(chartBox.topLeft().rightBy(valueScaleLabelWidth+tickLength.value()*2), chartBox.bottomLeft()).resolve(env0);
+  let timeAxisHeight = timeScaleLabelHeight+tickLength.value()*2;
+  let valueAxisWidth = valueScaleLabelWidth+tickLength.value()*2;
+  let xLabelBox: IBox;
+  let yLabelBox: IBox;
+  let plotBox: IBox;
+  let legendPosition: string;
+  if (timeAxisPosition === 'top') {
+    let cornerPos = chartBox.topLeft().rightBy(valueAxisWidth).belowBy(timeAxisHeight);
+    xLabelBox = box(cornerPos, chartBox.topRight()).resolve(env0);
+    yLabelBox = box(chartBox.bottomLeft(), cornerPos).resolve(env0);
+    plotBox = box(cornerPos, chartBox.bottomRight()).resolve(env0);
+    legendPosition = 'bottom';
+  } else { // timeAxisPosition === 'bottom'
+    let cornerPos = chartBox.bottomLeft().rightBy(valueAxisWidth).aboveBy(timeAxisHeight);
+    xLabelBox = box(cornerPos, chartBox.bottomRight()).resolve(env0);
+    yLabelBox = box(chartBox.topLeft(), cornerPos).resolve(env0);
+    plotBox = box(cornerPos, chartBox.topRight()).resolve(env0);
+    legendPosition = 'top';
+  }
 
-  const plotBox = box(yLabelBox.topRight(), xLabelBox.topRight()).resolve(env0);
 
   const vhRange = [ plotBox.bottom(), plotBox.top() ];
   const vwRange = [ plotBox.left(), plotBox.right() ];
@@ -303,9 +327,12 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const timeAxisTicks = timeScaleTicks.map(timeScale);
   
   context.beginPath();
-  axisLine([[plotBox.left(),plotBox.bottom()],[plotBox.right(),plotBox.bottom()]]);
+  const axisTickDir = timeAxisPosition === 'top' ? -1 : 1;
+  const axisLineY = timeAxisPosition === 'top' ? plotBox.top() : plotBox.bottom();
+  const axisLineTick = axisLineY + axisTickDir * tickLength.value();
+  axisLine([[plotBox.left(),axisLineY],[plotBox.right(),axisLineY]]);
   timeAxisTicks.forEach(x => {
-    axisLine([[x,plotBox.bottom()+tickLength.value()],[x,plotBox.bottom()]])
+    axisLine([[x,axisLineY],[x,axisLineTick]])
   });
   context.strokeStyle = chart.axis.stroke;
   context.lineWidth = dimension(chart.axis.lineWidth).resolve(env0).value();
@@ -313,12 +340,12 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
 
   context.beginPath();
   context.fillStyle = chart.axis.textColor;
-  context.textBaseline = "top";
+  context.textBaseline = timeAxisPosition === 'top' ? 'bottom' : 'top';
   context.textAlign = "center";
   timeAxisTicks.forEach((x,i) => {
     const d = timeScaleTicks[i];
     const label = dateLabel(d);
-    context.fillText(label, x, xLabelBox.top() + tickLength.value() * 2);
+    context.fillText(label, x, axisLineY + axisTickDir * tickLength.value() * 2);
   });
 
   const valueAxisTicks = valueScaleTicks.map(valueScale);
@@ -349,7 +376,11 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
                : nullShape();
 
   if (legend.height) {
-    context.translate(plotBox.left(), plotBox.top());
+    if (legendPosition === 'top') {
+      context.translate(plotBox.left(), plotBox.top());
+    } else {
+      context.translate(plotBox.left(), plotBox.bottom()-legend.height);
+    }
     legend.paint(canvas);
   }
 
