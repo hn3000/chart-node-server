@@ -22,7 +22,10 @@ export interface IChartSpec {
   labelFontSize?: string|number;
   labelFontFamily?: string;
 
+  locale?: string;
   labelPrecision?: number;
+  labelStyle?: string;
+  labelCurrency?: string;
   months?: string[];
 
   axis?: {
@@ -35,6 +38,9 @@ export interface IChartSpec {
   };
   valueAxis?: {
     position: 'left';
+    labelPrecision?: number;
+    labelStyle?: 'decimal'|'percent'|'currency';
+    labelCurrency?: string;
   }
   colors?: string[];
 }

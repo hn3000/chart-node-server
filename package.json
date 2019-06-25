@@ -1,6 +1,6 @@
 {
   "name": "chart-node-server",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -8,6 +8,8 @@
     "start": "node out/index",
     "prepare": "tsc",
     "tsc": "tsc",
+    "predocker": "tsc",
+    "docker": "docker build . -t node-chart-server",
     "pretest": "tsc -p tsconfig.test.json",
     "test": "node out-test/test/all-tests",
     "cover": "nyc npm test"
@@ -24,7 +26,8 @@
     "canvas": "^2.5.0",
     "chart.js": "^2.8.0",
     "d3": "^5.9.2",
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "full-icu": "^1.3.0"
   },
   "devDependencies": {
     "@types/chart.js": "^2.7.52",

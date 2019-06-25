@@ -44,4 +44,4 @@ COPY out/* ./out/
 
 EXPOSE 3456
 
-CMD node out/index.js
+CMD node --icu-data-dir=node_modules/full-icu out/index.js

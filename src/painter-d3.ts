@@ -241,15 +241,21 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     labelFontFamily = 'Helvetica,"sans-serif"',
     months = 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec'.split(','),
     labelPrecision = 2,
+    labelStyle = 'decimal',
+    labelCurrency = 'EUR',
+    locale='de-DE',
     seriesLabel = ''
   } = chart;
 
   const {
-    position: timeAxisPosition = 'top'
+    position: timeAxisPosition = 'bottom'
   } = chart.timeAxis || { };
 
   const {
-    position: valueAxisPosition = 'left'
+    position: valueAxisPosition = 'left',
+    labelPrecision: valueLabelPrecision = labelPrecision,
+    labelStyle: valueLabelStyle = labelStyle,
+    labelCurrency: valueLabelCurrency = labelCurrency,
   } = chart.valueAxis || { };
 
   const dateLabel = (d: Date) => {
@@ -274,10 +280,17 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     let label = dateLabel(date);
     let tm = context.measureText(label);
     return Math.max(tm.actualBoundingBoxDescent, r);
-  }, 0)
+  }, 0);
+
+  let valueFormat = new Intl.NumberFormat(locale, { 
+    maximumFractionDigits: valueLabelPrecision, 
+    minimumFractionDigits: valueLabelPrecision,
+    style: valueLabelStyle,
+    currency: valueLabelCurrency
+  });
 
   const valueScaleLabelWidth = valueScaleTicks.reduce((r,value) => {
-    let label = value.toFixed(labelPrecision);
+    let label = valueFormat.format(value);
     let tm = context.measureText(label);
     return Math.max(tm.width, r);
   }, 0);
@@ -363,7 +376,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   context.textBaseline = 'middle';
   context.textAlign = 'right';
   valueAxisTicks.forEach((y,i) => {
-    const label = valueScaleTicks[i].toFixed(labelPrecision);
+    const label = valueFormat.format(valueScaleTicks[i]);
 
     context.fillText(label, yLabelBox.right()-2*tickLength.value(), y);
   });

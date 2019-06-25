@@ -6,19 +6,32 @@
     "timestamp": "t"
   },
   "chart": {
+    "labelFontSize": "2vmin",
+    "labelFontFamily": "Helvetica, sans-serif",
+    "tickLength": "1vmin", 
     "background": "#333",
     "width": 1000,
     "height": 700,
+    "padX": "3.5vmin",
+    "padY": "2.5vmin",
     "cornerRadius": 0,
     "innerRadius": 0,
     "lineWidth": 2,
     "stroke": "#fff",
     "seriesLabel": "Data",
     "showLegend": false,
+    "locale": "de-DE",
     "axis": {
       "lineWidth": 1,
       "stroke": "#ccc",
       "textColor": "#fff"
+    },
+    "timeAxis": {
+      "position": "top"
+    },
+    "valueAxis": {
+      "labelStyle": "percent",
+      "labelPrecision": 0
     }
   },
   "data": [
