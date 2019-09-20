@@ -19,6 +19,9 @@ export interface IChartSpec {
   background: string;
   stroke: string;
   lineWidth?: number|string;
+  lineCap?: 'butt'|'round'|'square';
+  lineJoin?: 'bevel'|'miter'|'round';
+  miterLimit?: number;
   labelFontSize?: string|number;
   labelFontFamily?: string;
 

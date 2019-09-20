@@ -332,9 +332,12 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
                   .y(d => d[1]);
 
   context.beginPath();
-  line(data);
-  context.strokeStyle = chart.stroke;
   context.lineWidth = lineWidth.value();
+  context.lineCap = chart.lineCap || 'round';
+  context.lineJoin = chart.lineJoin || 'round';
+  context.miterLimit = null != chart.miterLimit ? chart.miterLimit : 4;
+  context.strokeStyle = chart.stroke;
+  line(data);
   context.stroke();
 
   const timeAxisTicks = timeScaleTicks.map(timeScale);
