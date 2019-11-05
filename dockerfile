@@ -1,4 +1,4 @@
-FROM node:11-alpine as base
+FROM node:13-alpine as base
 
 RUN npm config set unsafe-perm true
 
@@ -46,7 +46,7 @@ RUN apk add --no-cache \
 WORKDIR /chart-server
 
 COPY --from=builder /chart-server/ .
-COPY --from=compiler /chart-server/out .
+COPY --from=compiler /chart-server/out ./out/
 
 COPY assets/* ./assets/
 COPY example/chart-*json ./example/
@@ -57,4 +57,4 @@ COPY example/chart-*json ./example/
 
 EXPOSE 3456
 
-CMD node --icu-data-dir=node_modules/full-icu out/index.js
+CMD node --icu-data-dir=node_modules/full-icu out/index.js || sleep 1800
