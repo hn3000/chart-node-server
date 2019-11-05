@@ -6,7 +6,7 @@ import { renderPie, renderTimeline } from './painter-d3';
 import { UnitFactorsDefault, dimension, dimensionProxy } from './dimension';
 import { box, position } from './position';
 
-function run(argv) {
+function runServer(argv) {
   console.log("starting express");
   let app = express();
 
@@ -181,4 +181,24 @@ function writeSVG(canvas: c.Canvas, res) {
   res.send(buffer);
 }
 
-run(process.argv);
+const cluster = require('cluster');
+const numCPUs = require('os').cpus().length;
+
+if (numCPUs == 1) {
+  runServer(process.argv);
+} else {
+  if (cluster.isMaster) {
+    console.log(`Master ${process.pid} is starting ${numCPUs} worker${numCPUs == 1 ? '' : 's'}`);
+  
+    // Fork workers.
+    for (let i = 0; i < numCPUs; i++) {
+      cluster.fork();
+    }
+  
+    cluster.on('exit', (worker, code, signal) => {
+      console.log(`worker ${worker.process.pid} died`);
+    });
+  } else {
+    runServer(process.argv);
+  }
+}
