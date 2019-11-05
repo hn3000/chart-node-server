@@ -76,30 +76,41 @@ const { WATERMARK=false} = process.env;
 
 /** @param res: express.Request */
 function createImage(painter, [writer, type], req, res) {
+  const start = Date.now();
   //console.log(req.path, req.params, req.body);
   let { background, watermark } = req.body.chart;
   let { width, height } = dimensionProxy(req.body.chart, { width: 1920, height: 1080 });
-  let canvas = new c.Canvas(width.value(), height.value(), type);
-  const ctx = canvas.getContext('2d');
-  ctx.save();
-  if (null != background) {
-    ctx.fillStyle = background;
-    ctx.fillRect(0, 0, width.value(), height.value() );
-    ctx.restore();
+  const w = width.value();
+  const h = height.value();
+  const area = w * h;
+  if (w < 0 || h < 0 || area > 15e6) {
+    res.sendStatus(400, `illegal size`);
+  } else {
+    let canvas = new c.Canvas(width.value(), height.value(), type);
+    const ctx = canvas.getContext('2d');
     ctx.save();
+    if (null != background) {
+      ctx.fillStyle = background;
+      ctx.fillRect(0, 0, width.value(), height.value() );
+      ctx.restore();
+      ctx.save();
+    }
+  
+    const env0 = { 
+      vh: height.value()/100, 
+      vw: width.value() / 100, 
+      vmin: Math.min(height.value(), width.value()) / 100, 
+      vmax: Math.max(height.value(), width.value()) / 100,
+      ...UnitFactorsDefault
+    };
+  
+    painter(req, canvas, env0);
+    maybeRenderWatermark(req, canvas, watermark, width, height, env0);
+    writer(canvas, res);
   }
-
-  const env0 = { 
-    vh: height.value()/100, 
-    vw: width.value() / 100, 
-    vmin: Math.min(height.value(), width.value()) / 100, 
-    vmax: Math.max(height.value(), width.value()) / 100,
-    ...UnitFactorsDefault
-  };
-
-  painter(req, canvas, env0);
-  maybeRenderWatermark(req, canvas, watermark, width, height, env0);
-  writer(canvas, res);
+  res.on('close', () => {
+    console.log(`responded in ${Date.now() - start}ms`);
+  });
 }
 
 function maybeRenderWatermark(req, canvas, watermark, width, height, env0) {
