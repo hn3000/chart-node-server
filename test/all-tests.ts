@@ -1,6 +1,7 @@
 
 import { DimensionTest } from './dimension-test';
 import { PositionTest } from './position-test';
+import { ParseBooleanTest } from './parse-boolean-test';
 
 import {
   TestAsync,
@@ -16,6 +17,7 @@ export function runTests() {
   let test = new TestAsync();
   test.addTestClass(new DimensionTest(), 'DimensionTest');
   test.addTestClass(new PositionTest(), 'PositionTest');
+  test.addTestClass(new ParseBooleanTest(), 'ParseBooleanTest');
 
   let promise = test.runAsync();
   promise.then((result) => {

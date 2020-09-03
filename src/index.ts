@@ -5,6 +5,7 @@ import * as path from 'path';
 import { renderPie, renderTimeline } from './painter-d3';
 import { UnitFactorsDefault, dimension, dimensionProxy } from './dimension';
 import { box, position } from './position';
+import { parseBoolean } from './util';
 
 function runServer(argv) {
   console.log("starting express");
@@ -72,7 +73,7 @@ function runServer(argv) {
   });
 }
 
-const { WATERMARK=false} = process.env;
+const WATERMARK = parseBoolean(process.env.WATERMARK);
 
 /** @param res: express.Request */
 function createImage(painter, [writer, type], req, res) {
@@ -115,6 +116,7 @@ function createImage(painter, [writer, type], req, res) {
 
 function maybeRenderWatermark(req, canvas, watermark, width, height, env0) {
   if (WATERMARK || watermark) {
+    console.debug(`rendering watermark, WATERMARK = ${WATERMARK} (${typeof WATERMARK})`);
     const ctx = canvas.getContext('2d');
     let i = 0;
     try {

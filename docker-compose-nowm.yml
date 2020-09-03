@@ -1,0 +1,10 @@
+version: '3'
+services:
+  charts-nowm:
+    build: 
+      context: .
+    ports:
+     - "3457:3457"
+    environment:
+      WATERMARK: "false"
+      PORT: 3457
