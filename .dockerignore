@@ -1,1 +1,8 @@
 node_modules
+.github
+.git
+.vscode
+.nyc_output
+coverage
+out
+out-test
