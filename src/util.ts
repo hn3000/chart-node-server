@@ -1,3 +1,4 @@
+import { IChartMeta } from "./api";
 
 export function parseBoolean(v: any): boolean {
   switch (v) {
@@ -20,3 +21,30 @@ export function parseBoolean(v: any): boolean {
   }
 }
 
+export function pickDefined<T>(args: (T|undefined)[], fallback: T): T {
+  for (let i = 0; i < args.length; i++) {
+    const thisOne = args[i];
+    if (undefined !== thisOne) {
+      return thisOne;
+    }
+  }
+  return fallback;
+}
+
+export function pickNonNull<T>(args: (T|null|undefined)[], fallback: T): T {
+  for (let i = 0; i < args.length; i++) {
+    const thisOne = args[i];
+    if (undefined !== thisOne && null !== thisOne) {
+      return thisOne;
+    }
+  }
+  return fallback;
+}
+
+export function valueGetter(name: string, meta: IChartMeta) {
+  const mapped = meta[name];
+  if (null != mapped && '' !== mapped) {
+    return x => x[mapped];
+  }
+  return x => x[name];
+}

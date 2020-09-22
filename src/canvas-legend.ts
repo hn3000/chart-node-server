@@ -6,13 +6,14 @@ import { Dimension } from './dimension';
 export interface IShape {
   width: number, 
   height: number,
-  paint(canvas: c.Canvas);
+  paint(canvas: c.Canvas): void;
 }
 
 
 export enum LegendStyle {
   BOX='box',
-  LINE='line'
+  LINE='line',
+  SHAPE='shape'
 }
 
 export function nullShape() {
@@ -63,10 +64,31 @@ function createLineMarker(width: number, height: number, fill: string, stroke: s
   };
 }
 
+function createShapeMarker(paint: (context, w, h) => void, width: number, height: number, fill: string, stroke: string, lineWidth: number) {
+  return {
+    width, height,
+    paint(canvas: c.Canvas) {
+      let ctx = canvas.getContext('2d');
+      ctx.beginPath();
+      ctx.save();
+      if (fill) {
+        ctx.fillStyle = fill;
+      }
+      if (stroke) {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = lineWidth;
+      }
+      paint(ctx, width, height);
+      ctx.restore();
+    }
+  };
+}
+
 export function createLegendEntry(
   canvas: c.Canvas, 
   style: LegendStyle, color: string,
-  text: string, textColor: string
+  text: string, textColor: string,
+  entry: IData,
 ): IShape {
   const ctx = canvas.getContext('2d');
   ctx.textBaseline = 'alphabetic';
@@ -81,6 +103,8 @@ export function createLegendEntry(
     marker = createBoxMarker(markerHeight, markerHeight, color, null, 0);
   } else if (style === LegendStyle.LINE) {
     marker = createLineMarker(markerHeight, ascent, null, color, 0.05*ascent);
+  } else if (style === LegendStyle.SHAPE) {
+    marker = createShapeMarker(entry['drawShape'], markerHeight, markerHeight, entry.c, entry.s, 1);
   } else {
     marker = nullShape();
   }
@@ -116,7 +140,7 @@ export function createLegend(
   width: number, 
   textColor: string
 ) {
-  const legendEntries = data.map(x => createLegendEntry(canvas, style, x.c, x.l, textColor));
+  const legendEntries = data.map(x => createLegendEntry(canvas, style, x.c, x.l, textColor, x));
   const lines: {shape: IShape, x: number}[][] = [];
   const lineWidths: number[] = [];
   const positions = [];

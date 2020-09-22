@@ -1,0 +1,76 @@
+{
+  "meta": {
+    "legend": "l",
+    "xLabel": "xl",
+    "xValue": "x",
+    "yLabel": "yl",
+    "yValue": "y"
+  },
+  "chart": {
+    "width": 1000,
+    "height": 480,
+    "colors": [
+      "#8c2237",
+      "#9a7428",
+      "#d6ae65",
+      "#77544b",
+      "#a1687f",
+      "#8674C5",
+      "#74C5BF",
+      "#567CAF",
+      "#60AD5A",
+      "#9D4993"
+    ],
+    "shapes": [
+      "m0.5 0.5 h32 v32 h-32 0z",
+      "M16-6.627L38.627 16 16 38.627-6.627 16z",
+      "m16,0 16,26.5 -32,0z",
+      "M0,16 Q1.4,30.6 16,32 30.6,30.6 32,16 30.6,1.4 16,0 1.4,1.4 0,16z"
+    ],
+    "labelStyle": "percent",
+    "labelPrecision": 0,
+    "labelFontSize": "7vh",
+    "shapeSize": "5vh",
+    "showLegend": true,
+    "extra": 0.07,
+    "textColor": null,
+    "lineWidth": 1.0,
+    "stroke": "#333",
+    "xAxis": {
+      "label": "X-Achsen Label"
+    },
+    "yAxis": {
+      "label": "Y-Achsen Label"
+    }
+  },
+  "data": [
+    {
+      "l": "Langes Serienlabel A",
+      "x": 0,
+      "xl": "0%",
+      "y": 0,
+      "yl": "0%"
+    },
+    {
+      "l": "Langes Serienlabel B",
+      "x": 1,
+      "xl": "100%",
+      "y": 1,
+      "yl": "100%"
+    },
+    {
+      "l": "Langes Serienlabel C",
+      "x": 0,
+      "xl": "0%",
+      "y": 1,
+      "yl": "100%"
+    },
+    {
+      "l": "Langes Serienlabel D",
+      "x": 1,
+      "xl": "100%",
+      "y": 0,
+      "yl": "0%"
+    }
+  ]
+}

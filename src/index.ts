@@ -2,7 +2,9 @@ import * as c from 'canvas';
 import * as express from 'express';
 import * as path from 'path';
 
-import { renderPie, renderTimeline } from './painter-d3';
+import { renderPie } from './painter-d3-piechart';
+import { renderTimeline } from './painter-d3-timeline';
+import { renderScatter } from './painter-d3-scatter';
 import { UnitFactorsDefault, dimension, dimensionProxy } from './dimension';
 import { box, position } from './position';
 import { parseBoolean } from './util';
@@ -32,6 +34,7 @@ function runServer(argv) {
   const styles = {
     pie: renderPie,
     timeline: renderTimeline,
+    scatter: renderScatter,
   };
   const formats = {
     pdf: [writePDF, 'pdf'],

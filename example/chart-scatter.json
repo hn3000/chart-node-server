@@ -1,0 +1,120 @@
+{
+  "meta": {
+    "legend": "l",
+    "xLabel": "xl",
+    "xValue": "x",
+    "yLabel": "yl",
+    "yValue": "y"
+  },
+  "chart": {
+    "width": 500,
+    "height": 240,
+    "colors": [
+      "#8c2237",
+      "#9a7428",
+      "#d6ae65",
+      "#77544b",
+      "#a1687f",
+      "#8674C5",
+      "#74C5BF",
+      "#567CAF",
+      "#60AD5A",
+      "#9D4993"
+    ],
+    "shapes": [
+        "M4,4 28,4 28,28 4,28z",
+        "M16,32 32,6 0,6z",
+        "M16,0 32,26 0,26z",
+        "M16,32 32,16 16,0 0,16z",
+        "M0,16 Q0,32 16,32 32,32 32,16 32,0 16,0 0,0 0,16z",
+        "M0,16 Q1.4,30.6 16,32 30.6,30.6 32,16 30.6,1.4 16,0 1.4,1.4 0,16z"
+    ],
+    "labelStyle": "percent",
+    "labelPrecision": "2",
+    "labelFontSize": "6vh",
+    "shapeSize": "5vh",
+    "showLegend": true,
+    "legendPosition": "top",
+    "extra": 0.07,
+    "xAxis": {
+      "label": "X-Achsen Label",
+      "lineWidth": 1.0
+    },
+    "yAxis": {
+      "label": "Y-Achsen Label",
+      "lineWidth": 1.0
+    }
+  },
+  "data": [
+    {
+      "l": "Label mit einem langen Namen A",
+      "x": 0.023324648980779017,
+      "xl": "2,33%",
+      "y": 0.052,
+      "yl": "5,2%"
+    },
+    {
+      "l": "Label mit einem langen Namen B",
+      "x": 0.0030515462539624227,
+      "xl": ",31%",
+      "y": 0.0219,
+      "yl": "2,19%"
+    },
+    {
+      "l": "Label mit einem langen Namen C",
+      "x": 0.002156907190647539,
+      "xl": ",22%",
+      "y": 0.0325,
+      "yl": "3,25%"
+    },
+    {
+      "l": "Label mit einem langen Namen D",
+      "x": 0.007615331116517465,
+      "xl": ",76%",
+      "y": 0.0307,
+      "yl": "3,07%"
+    },
+    {
+      "l": "Label mit einem langen Namen E",
+      "x": 0.015382383418288903,
+      "xl": "1,54%",
+      "y": 0.0789,
+      "yl": "7,89%"
+    },
+    {
+      "l": "Label mit einem langen Namen F",
+      "x": 0.04416412991560925,
+      "xl": "4,42%",
+      "y": 0.1362,
+      "yl": "13,62%"
+    },
+    {
+      "l": "Label mit einem langen Namen G",
+      "x": 0.018204656098533833,
+      "xl": "1,82%",
+      "y": 0.0059,
+      "yl": ",59%"
+    },
+    {
+      "l": "Label mit einem langen Namen H",
+      "x": -0.00815411880521999,
+      "xl": "-,82%",
+      "y": 0.0684,
+      "yl": "6,84%"
+    },
+    {
+      "l": "Label mit einem langen Namen I",
+      "x": 0.1489463276355285,
+      "xl": "14,89%",
+      "y": 0.1973,
+      "yl": "19,73%"
+    },
+    {
+      "l": "Label mit einem langen Namen K",
+      "x": -0.02542482809570057,
+      "xl": "-2,54%",
+      "y": 0.0448,
+      "yl": "4,48%"
+    }
+  ]
+}

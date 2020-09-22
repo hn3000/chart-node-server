@@ -39,7 +39,25 @@ export interface IChartSpec {
   timeAxis?: {
     position: 'top' | 'bottom';
   };
+  mainAxis?: {
+    position: 'top' | 'bottom';
+    labelPrecision?: number;
+    labelStyle?: 'decimal'|'percent'|'currency';
+    labelCurrency?: string;
+  };
   valueAxis?: {
+    position: 'left';
+    labelPrecision?: number;
+    labelStyle?: 'decimal'|'percent'|'currency';
+    labelCurrency?: string;
+  }
+  xAxis?: {
+    position: 'top' | 'bottom';
+    labelPrecision?: number;
+    labelStyle?: 'decimal'|'percent'|'currency';
+    labelCurrency?: string;
+  }
+  yAxis?: {
     position: 'left';
     labelPrecision?: number;
     labelStyle?: 'decimal'|'percent'|'currency';
@@ -57,11 +75,16 @@ export interface IChartBody {
 
 export interface IData {
   v: number;
-  c: string;
+  c: string; // color
+  s?: string; // optional separate stroke color
   vl: string;
   l: string;
 }
 
 export interface IPieBody extends IChartBody {
   data: any[];
+  showLegend: string|boolean;
+
+  legendPosition: 'top' | 'bottom';
+
 }
