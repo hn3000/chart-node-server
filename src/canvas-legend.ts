@@ -4,9 +4,13 @@ import { IData } from './api';
 import { Dimension } from './dimension';
 
 export interface IShape {
-  width: number, 
-  height: number,
+  width: number;
+  height: number;
   paint(canvas: c.Canvas): void;
+}
+
+export interface ILegendShape extends IShape {
+  lineHeight: number;
 }
 
 
@@ -139,7 +143,7 @@ export function createLegend(
   style: LegendStyle, 
   width: number, 
   textColor: string
-) {
+): ILegendShape {
   const legendEntries = data.map(x => createLegendEntry(canvas, style, x.c, x.l, textColor, x));
   const lines: {shape: IShape, x: number}[][] = [];
   const lineWidths: number[] = [];
@@ -177,6 +181,7 @@ export function createLegend(
   return ({
     height: currentTop,
     width,
+    lineHeight,
     paint(canvas: c.Canvas) {
       const context = canvas.getContext('2d');
       for (let i = 0, n = legendEntries.length; i < n; ++i) {

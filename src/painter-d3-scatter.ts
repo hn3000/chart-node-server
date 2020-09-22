@@ -17,6 +17,8 @@ export interface IScatterChartBody extends IChartBody {
 
     showLegend: boolean;
     legendPosition: 'top' | 'bottom';
+    legendFontSize: string|number;
+
   }
 }
 
@@ -40,6 +42,7 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     padY = padX,
     labelFontSize,
     shapeSize = labelFontSize,
+    legendFontSize = labelFontSize,
     lineWidth,
     tickLength
   } = dimensions;
@@ -128,7 +131,8 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
 
 
   const chartBox = box(0,0, canvas.width, canvas.height).insideBox(padX, padY).resolve(env0);
-  const labelFont = `${labelFontSize.value()}px ${labelFontFamily}`
+  const labelFont = `${labelFontSize.value()}px ${labelFontFamily}`;
+  const legendFont = `${legendFontSize.value()}px ${labelFontFamily}`;
 
   const extraX = (maxX - minX) * extra;
   const extraY = (maxY - minY) * extra;
@@ -180,10 +184,12 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
 
   const { textColor = '#000' } = chart.axis || {};
   const legendWidth = Math.abs(insideBox.width());
+  context.font = legendFont;
   const legend = showLegend
                ? createLegend(canvas, data, LegendStyle.SHAPE, legendWidth, textColor)
-               : nullShape();
+               : { ...nullShape(), lineHeight: 0 };
 
+  context.font = labelFont;
   let paintBox: IBox;
   if (xAxisPosition === 'top') {
     let cornerPos = chartBox.topLeft().rightBy(valueAxisYWidth).belowBy(valueAxisXHeight);
@@ -306,8 +312,9 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     if (legendPosition === 'top') {
       context.translate(insideBox.left(), insideBox.top());
     } else {
-      context.translate(insideBox.left(), insideBox.bottom()-legend.height);
+      context.translate(insideBox.left(), insideBox.bottom() -legend.height +legend.lineHeight);
     }
+    context.font = legendFont;
     legend.paint(canvas);
   }
 
