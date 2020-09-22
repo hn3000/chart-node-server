@@ -17,7 +17,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
   const meta = body.meta;
 
   const value   = valueGetter("value", meta);
-  const label   = valueGetter("value", meta);
+  const label   = valueGetter("label", meta);
   const legend  = valueGetter("legend", meta);
   const color   = valueGetter("color", meta);
 
