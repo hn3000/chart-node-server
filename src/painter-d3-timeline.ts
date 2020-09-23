@@ -16,7 +16,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const body: ITimeLineBody = req.body;
   const meta = body.meta;
   const chart = body.chart;
-  const getTimestamp = valueGetter('date', meta);
+  const getTimestamp = valueGetter('timestamp', meta);
   const getValue = valueGetter("value", meta);
 
   const data = req.body.data;
