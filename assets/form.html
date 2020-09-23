@@ -70,6 +70,13 @@
       let activePreset = null;
       function activatePreset(evt) {
         const idx = evt && evt.target.value;
+        if (null != idx) {
+          doActivatePreset(idx);
+          const label = presets[idx].label;
+          history.pushState(null, `Preset ${label}`, `#${label}`);
+        }
+      }
+      function doActivatePreset(idx) {
         const preset = presets[idx || 0];
         if (activePreset === preset) {
           //console.log('preset already active:', preset);
@@ -81,7 +88,8 @@
         fetch(preset.data)
           .then(handleStatus)
           .then(unpackText)
-          .then(json => $1('#json').value = json);
+          .then(json => $1('#json').value = json)
+          .then(() => run());
       }
       function handleStatus(response) {
         if (response.status >= 400) throw(response); 
@@ -93,6 +101,18 @@
       function unpackJson(response) {
         return response.json();
       }
+      function handleHash() {
+        if (location.hash) {
+          const name = location.hash.substring(1);
+          console.log(`activate preset ${name}`);
+          const  idx = presets.findIndex(x => x.label === name);
+          if (idx >= 0) {
+            doActivatePreset(idx);
+          }
+        }
+      }
+      window.onhashchange = handleHash;
+      handleHash();
     </script>
   </body>
 </html>
