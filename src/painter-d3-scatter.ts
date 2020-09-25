@@ -266,10 +266,14 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
 
   const { textColor = '#000' } = chart.axis || {};
   const legendWidth = Math.abs(insideBox.width() - yAxisWidth);
+
+  context.save();
   context.font = legendFont;
   const legend = showLegend
                ? createLegend(canvas, data, LegendStyle.SHAPE, legendWidth, textColor)
                : { ...nullShape(), lineHeight: 0 };
+
+  context.restore();
 
   if (legendPosition == 'top') {
     legendBox = box(insideBox.topLeft().rightBy(yAxisWidth), insideBox.topRight().belowBy(legend.height));

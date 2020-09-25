@@ -106,6 +106,7 @@ export function createTextShape(
 
   const x = position.x();
   const y = position.y();
+  ctx.restore();
 
   return ({
     height: tm.actualBoundingBoxAscent,
