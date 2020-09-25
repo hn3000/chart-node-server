@@ -31,17 +31,21 @@
     ],
     "labelStyle": "percent",
     "labelPrecision": "2",
-    "labelFontSize": "6vh",
-    "shapeSize": "5vh",
+    "labelFontSize": "5vmin",
+    "shapeSize": "5vmin",
     "showLegend": true,
-    "legendPosition": "top",
-    "extra": 0.07,
+    "legendFontSize": "3.4vmin",
+    "legendPosition": "bottom",
+    "extra": 0.0,
+    "axis": {
+      "titleFontWeight": 700
+    },
     "xAxis": {
-      "label": "X-Achsen Label",
+      "title": "X-Axis Titel",
       "lineWidth": 1.0
     },
     "yAxis": {
-      "label": "Y-Achsen Label",
+      "title": "Y-Axis Titel",
       "lineWidth": 1.0
     }
   },

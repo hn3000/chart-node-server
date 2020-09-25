@@ -37,10 +37,10 @@
     "lineWidth": 1.0,
     "stroke": "#333",
     "xAxis": {
-      "label": "X-Achsen Label"
+      "title": "X-Axis Title"
     },
     "yAxis": {
-      "label": "Y-Achsen Label"
+      "title": "Y-Axis Title"
     }
   },
   "data": [
