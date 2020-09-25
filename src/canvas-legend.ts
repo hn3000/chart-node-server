@@ -2,6 +2,7 @@
 import * as c from 'canvas';
 import { IData } from './api';
 import { Dimension } from './dimension';
+import { IPosition } from './position';
 
 export interface IShape {
   width: number;
@@ -88,6 +89,43 @@ function createShapeMarker(paint: (context, w, h) => void, width: number, height
   };
 }
 
+export function createTextShape(
+  canvas: c.Canvas, 
+  position: IPosition,
+  text: string,
+  font: string,
+  textBaseline: CanvasTextBaseline = 'alphabetic',
+  textAlign: CanvasTextAlign = 'left',
+  rotateDeg: number = 0,
+): IShape {
+
+  const ctx = canvas.getContext('2d');
+  ctx.save();
+  ctx.font = font;
+  const tm = ctx.measureText(text);
+
+  const x = position.x();
+  const y = position.y();
+
+  return ({
+    height: tm.actualBoundingBoxAscent,
+    width: tm.width,
+    paint(canvas: c.Canvas) {
+      const ctx = canvas.getContext('2d');
+
+      ctx.save();
+      ctx.font = font;
+      ctx.textAlign = textAlign;
+      ctx.textBaseline = textBaseline;
+
+      ctx.translate(x,y);
+      ctx.rotate(rotateDeg / 180 * Math.PI);
+      ctx.fillText(text, 0, 0, tm.width);
+      ctx.restore();
+    }
+  });
+}
+
 export function createLegendEntry(
   canvas: c.Canvas, 
   style: LegendStyle, color: string,
@@ -125,6 +163,7 @@ export function createLegendEntry(
     paint(canvas: c.Canvas) {
       const ctx = canvas.getContext('2d');
       ctx.save();
+      ctx.save();
       ctx.translate(markerX, markerY);
       marker.paint(canvas);
       ctx.restore();
@@ -132,6 +171,7 @@ export function createLegendEntry(
       ctx.textBaseline = 'alphabetic';
       ctx.textAlign = 'left';
       ctx.fillText(text, textX, textY, textMetrics.width);
+      ctx.restore();
     }
   } as IShape;
 }

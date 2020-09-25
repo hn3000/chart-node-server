@@ -23,6 +23,7 @@ export interface IChartSpec {
   lineJoin?: 'bevel'|'miter'|'round';
   miterLimit?: number;
   labelFontSize?: string|number;
+  labelFontWeight?: number|string;
   labelFontFamily?: string;
 
   locale?: string;
@@ -35,33 +36,73 @@ export interface IChartSpec {
     stroke: string;
     lineWidth: number;
     textColor: string;
+    labelFontSize?: string|number;
+    labelFontWeight?: number|string;
+    labelFontFamily?: string;
+    titleFontSize?: string|number;
+    titleFontWeight?: string|number;
+    titleFontFamily?: string;
   };
   timeAxis?: {
     position: 'top' | 'bottom';
+    labelFontSize?: string|number;
+    labelFontWeight?: number|string;
+    labelFontFamily?: string;
+    titleFontSize?: string|number;
+    titleFontWeight?: string|number;
+    titleFontFamily?: string;
   };
   mainAxis?: {
     position: 'top' | 'bottom';
     labelPrecision?: number;
     labelStyle?: 'decimal'|'percent'|'currency';
     labelCurrency?: string;
+    labelFontSize?: string|number;
+    labelFontWeight?: number|string;
+    labelFontFamily?: string;
+    title?: string;
+    titleFontSize?: string|number;
+    titleFontWeight?: string|number;
+    titleFontFamily?: string;
   };
   valueAxis?: {
     position: 'left';
     labelPrecision?: number;
     labelStyle?: 'decimal'|'percent'|'currency';
     labelCurrency?: string;
+    labelFontSize?: string|number;
+    labelFontWeight?: number|string;
+    labelFontFamily?: string;
+    title?: string;
+    titleFontSize?: string|number;
+    titleFontWeight?: string|number;
+    titleFontFamily?: string;
   }
   xAxis?: {
     position: 'top' | 'bottom';
     labelPrecision?: number;
     labelStyle?: 'decimal'|'percent'|'currency';
     labelCurrency?: string;
+    labelFontSize?: string|number;
+    labelFontWeight?: number|string;
+    labelFontFamily?: string;
+    title?: string;
+    titleFontSize?: string|number;
+    titleFontWeight?: string|number;
+    titleFontFamily?: string;
   }
   yAxis?: {
     position: 'left';
     labelPrecision?: number;
     labelStyle?: 'decimal'|'percent'|'currency';
     labelCurrency?: string;
+    labelFontSize?: string|number;
+    labelFontWeight?: number|string;
+    labelFontFamily?: string;
+    title?: string;
+    titleFontSize?: string|number;
+    titleFontWeight?: string|number;
+    titleFontFamily?: string;
   }
   colors?: string[];
 }
@@ -70,6 +111,9 @@ export interface IChartSpec {
 export interface IChartBody {
   meta: IChartMeta;
   chart: IChartSpec;
+  debug?: {
+    boxes: boolean;
+  }
 }
 
 

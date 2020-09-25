@@ -1,7 +1,7 @@
 import * as d3 from 'd3';
 import { IChartBody, IChartSpec } from './api';
 import * as c from 'canvas';
-import { LegendStyle, createLegend, nullShape } from './canvas-legend';
+import { LegendStyle, createLegend, nullShape, createTextShape, IShape } from './canvas-legend';
 import { IUnitFactors, dimension, dimensionProxy } from './dimension';
 import { box, IBox } from './position';
 import { valueGetter } from './util';
@@ -33,8 +33,29 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     padX: '2vmin',
     //padY: '1vmin', // commented: let's use padX as default
     labelFontSize: '2.5vmin',
+    titleFontSize: '3vmin',
     tickLength: '1.5vmin',
-    lineWidth: '2px'
+    lineWidth: '2px',
+    axis: {
+      labelFontSize: undefined, // ie. use labelFontSIze
+      titleFontSize: undefined,
+    },
+    mainAxis: {
+      labelFontSize: undefined, // ie. use labelFontSIze
+      titleFontSize: undefined,
+    },
+    valueAxis: {
+      labelFontSize: undefined, // ie. use labelFontSIze
+      titleFontSize: undefined,
+    },
+    xAxis: {
+      labelFontSize: undefined, // ie. use labelFontSIze
+      titleFontSize: undefined,
+    },
+    yAxis: {
+      labelFontSize: undefined, // ie. use labelFontSIze
+      titleFontSize: undefined,
+    }
   };
   const dimensions = dimensionProxy(chart, dimDefaults, () => env0);
   const {
@@ -44,10 +65,17 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     shapeSize = labelFontSize,
     legendFontSize = labelFontSize,
     lineWidth,
-    tickLength
+    tickLength,
   } = dimensions;
   const { 
     labelFontFamily = 'Helvetica,"sans-serif"',
+    labelFontWeight = 400,
+    axis: {
+      labelFontFamily: labelFontFamilyAxis = labelFontFamily,
+      labelFontWeight: labelFontWeightAxis = labelFontWeight,
+      titleFontFamily: titleFontFamilyAxis = labelFontFamily,
+      titleFontWeight: titleFontWeightAxis = labelFontWeight,
+    },
     colors = [ 'red', 'green', 'blue' ],
     shapes = [ 
       'M16,0 32,26 0,26z', 
@@ -61,21 +89,49 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     extra = 0.05,
     legendPosition = 'bottom',
     showLegend
-  } = chart;
+  } = { axis: {}, ...chart };
+
+  const axisDimensions = dimensionProxy(chart.axis || { }, { labelFontSize, titleFontSize: labelFontSize }, () => env0);
+  const {
+    labelFontSize: labelFontSizeAxis = labelFontSize,
+    titleFontSize: titleFontSizeAxis = labelFontSize,
+  } = axisDimensions;
 
   const {
     position: xAxisPosition = 'bottom',
     labelPrecision: xLabelPrecision = labelPrecision,
     labelStyle: xLabelStyle = labelStyle,
     labelCurrency: xLabelCurrency = labelCurrency,
+    labelFontFamily: labelFontFamilyXAxis = labelFontFamilyAxis,
+    labelFontWeight: labelFontWeightXAxis = labelFontWeightAxis,
+    titleFontFamily: titleFontFamilyXAxis = titleFontFamilyAxis,
+    titleFontWeight: titleFontWeightXAxis = titleFontWeightAxis,
+    title: titleXAxis = '',
   } = chart.xAxis || chart.mainAxis || { };
 
+  const xAxisDimensions = dimensionProxy(chart.xAxis || chart.mainAxis || { }, { labelFontSize: labelFontSizeAxis, titleFontSize: titleFontSizeAxis });
   const {
-    position: valueAxisPosition = 'left',
+    labelFontSize: labelFontSizeXAxis = labelFontSizeAxis,
+    titleFontSize: titleFontSizeXAxis = titleFontSizeAxis,
+  } = xAxisDimensions;
+
+  const {
+    position: yAxisPosition = 'left',
     labelPrecision: yLabelPrecision = labelPrecision,
     labelStyle: yLabelStyle = labelStyle,
     labelCurrency: yLabelCurrency = labelCurrency,
+    labelFontFamily: labelFontFamilyYAxis = labelFontFamilyAxis,
+    labelFontWeight: labelFontWeightYAxis = labelFontWeightAxis,
+    titleFontFamily: titleFontFamilyYAxis = titleFontFamilyAxis,
+    titleFontWeight: titleFontWeightYAxis = titleFontWeightAxis,
+    title: titleYAxis = '',
   } = chart.yAxis || chart.valueAxis || { };
+
+  const yAxisDimensions = dimensionProxy(chart.yAxis || chart.valueAxis || { }, { labelFontSize: labelFontSizeAxis, titleFontSize: titleFontSizeAxis });
+  const {
+    labelFontSize: labelFontSizeYAxis = labelFontSizeAxis,
+    titleFontSize: titleFontSizeYAxis = titleFontSizeAxis,
+  } = yAxisDimensions;
 
 
   const getXValue = valueGetter('xValue', meta);
@@ -89,7 +145,7 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
   const drawMarkerPx = (context, w,h, i) => {
     try{
       context.save();
-      console.log(`drawMarkerPx: ${JSON.stringify({w,h,i})}`);
+      //console.log(`drawMarkerPx: ${JSON.stringify({w,h,i})}`);
       context.scale(w/32, h/32);
       context.fill(marker(i))
       context.stroke(marker(i))
@@ -99,7 +155,6 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
       console.log(`exception in drawMarkerPx(${JSON.stringify({w,h,i})})`, ex);
     }
   };
-
 
   const data = req.body.data.map((d,i) => ({
     ...d, 
@@ -128,11 +183,10 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
 
   /*console.log({ minX, maxX, minY, maxY });*/
 
-
-
   const chartBox = box(0,0, canvas.width, canvas.height).insideBox(padX, padY).resolve(env0);
   const labelFont = `${labelFontSize.value()}px ${labelFontFamily}`;
   const legendFont = `${legendFontSize.value()}px ${labelFontFamily}`;
+  const axisTitleFont = `${titleFontWeightAxis} ${titleFontSizeAxis.value()}px ${labelFontFamily}`;
 
   const extraX = (maxX - minX) * extra;
   const extraY = (maxY - minY) * extra;
@@ -150,13 +204,13 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
 
   let valueFormatX = new Intl.NumberFormat(locale, { 
     maximumFractionDigits: xLabelPrecision, 
-    minimumFractionDigits: xLabelPrecision,
+    minimumFractionDigits: 0,
     style: xLabelStyle,
     currency: xLabelCurrency
   });
   let valueFormatY = new Intl.NumberFormat(locale, { 
     maximumFractionDigits: yLabelPrecision, 
-    minimumFractionDigits: yLabelPrecision,
+    minimumFractionDigits: 0,
     style: yLabelStyle,
     currency: yLabelCurrency
   });
@@ -173,52 +227,79 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     return Math.max(tm.width, r);
   }, 0);
 
+  const measureTitle = (text, font) => {
+    if (null == text || text.trim() === '') {
+      return 0;
+    }
+    context.save();
+    context.font = font;
+    let tm = context.measureText(text);
+    context.restore();
+    return Math.max(tm.actualBoundingBoxDescent, 0);
+  };
+
+  const xAxisTitleHeight = 2 * measureTitle(titleXAxis, axisTitleFont);
+  const yAxisTitleHeight = 2 * measureTitle(titleYAxis, axisTitleFont); // rotated by 90 degrees, this becomes the width of the box
+
+  console.log(({
+    titleXAxis, xAxisTitleHeight,
+    titleYAxis, yAxisTitleHeight,
+    axisTitleFont,
+  }));
+
+
+  context.font = labelFont;
+
   let valueAxisXHeight = valueScaleXLabelHeight+tickLength.value()*2;
   let valueAxisYWidth = valueScaleYLabelWidth+tickLength.value()*2;
   let xLabelBox: IBox;
+  let xTitleBox: IBox;
   let yLabelBox: IBox;
+  let yTitleBox: IBox;
   let plotBox: IBox;
   let legendBox: IBox;
+  let paintBox: IBox;
 
   let insideBox = chartBox.insideBox(padX, padY);
 
+  const yAxisWidth = yAxisTitleHeight + valueAxisYWidth;
+
   const { textColor = '#000' } = chart.axis || {};
-  const legendWidth = Math.abs(insideBox.width());
+  const legendWidth = Math.abs(insideBox.width() - yAxisWidth);
   context.font = legendFont;
   const legend = showLegend
                ? createLegend(canvas, data, LegendStyle.SHAPE, legendWidth, textColor)
                : { ...nullShape(), lineHeight: 0 };
 
-  context.font = labelFont;
-  let paintBox: IBox;
-  if (xAxisPosition === 'top') {
-    let cornerPos = chartBox.topLeft().rightBy(valueAxisYWidth).belowBy(valueAxisXHeight);
-    xLabelBox = box(cornerPos, chartBox.topRight()).resolve(env0);
-    yLabelBox = box(chartBox.bottomLeft(), cornerPos).resolve(env0);
-    paintBox = box(cornerPos, insideBox.bottomRight()).resolve(env0);
-  } else { // xAxisPosition === 'bottom'
-    let cornerPos = chartBox.bottomLeft().rightBy(valueAxisYWidth).aboveBy(valueAxisXHeight);
-    xLabelBox = box(cornerPos, chartBox.bottomRight()).resolve(env0);
-    yLabelBox = box(chartBox.topLeft(), cornerPos).resolve(env0);
-    paintBox = box(cornerPos, insideBox.topRight()).resolve(env0);
-  }
-
-  
-  if (legendPosition == 'bottom') {
-    legendBox = box(paintBox.bottomLeft(), paintBox.bottomRight().aboveBy(legend.height));
-    plotBox = box(legendBox.topLeft().aboveBy(padY), paintBox.topRight());
+  if (legendPosition == 'top') {
+    legendBox = box(insideBox.topLeft().rightBy(yAxisWidth), insideBox.topRight().belowBy(legend.height));
+    paintBox = box(insideBox.bottomLeft(), legendBox.bottomRight()).resolve(env0);
   } else {
-    legendBox = box(paintBox.topLeft(), paintBox.topRight().belowBy(legend.height));
-    plotBox = box(legendBox.bottomLeft().belowBy(padY), paintBox.bottomRight());
+    legendBox = box(insideBox.bottomLeft().rightBy(yAxisWidth), insideBox.bottomRight().aboveBy(legend.height));
+    paintBox = box(insideBox.topLeft(), legendBox.topRight()).resolve(env0);
   }
 
-  /*
-  context.strokeStyle = '#f4f';
-  context.strokeRect(plotBox.left(), plotBox.top(), plotBox.width(), plotBox.height());
 
-  context.strokeStyle = '#44f';
-  context.strokeRect(insideBox.left(), insideBox.top(), insideBox.width(), insideBox.height());
-  */
+  // yAxis title is rotated 90°, height becomes width
+  yTitleBox = box(paintBox.topLeft(), paintBox.bottomLeft().rightBy(yAxisTitleHeight)).resolve(env0);
+  const yTitleShape = createTextShape(canvas, yTitleBox.center(), titleYAxis, axisTitleFont, 'middle', 'center', -90);
+  let xTitleShape: IShape;
+  
+  if (xAxisPosition === 'top') {
+    let cornerPos = paintBox.topLeft().rightBy(yAxisWidth).belowBy(xAxisTitleHeight+valueAxisXHeight);
+    xTitleBox = box(paintBox.topLeft(), paintBox.topRight().belowBy(xAxisTitleHeight)).resolve(env0);
+    xTitleShape = createTextShape(canvas, xTitleBox.center(), titleXAxis, axisTitleFont, 'middle', 'center');
+    xLabelBox = box(cornerPos, insideBox.topRight()).resolve(env0);
+    yLabelBox = box(yTitleBox.bottomLeft(), cornerPos).resolve(env0);
+    plotBox = box(paintBox.bottomLeft().rightBy(yAxisWidth), xLabelBox.bottomRight());
+  } else { // xAxisPosition === 'bottom'
+    let cornerPos = paintBox.bottomLeft().rightBy(yAxisWidth).aboveBy(xAxisTitleHeight+valueAxisXHeight);
+    xTitleBox = box(paintBox.bottomLeft(), paintBox.bottomRight().aboveBy(xAxisTitleHeight)).resolve(env0);
+    xTitleShape = createTextShape(canvas, xTitleBox.center(), titleXAxis, axisTitleFont, 'middle', 'center');
+    xLabelBox = box(cornerPos, insideBox.bottomRight()).resolve(env0);
+    yLabelBox = box(yTitleBox.topLeft(), cornerPos).resolve(env0);
+    plotBox = box(paintBox.topLeft().rightBy(yAxisWidth), xLabelBox.topRight());
+  }
 
   const vhRange = [ plotBox.bottom(), plotBox.top() ];
   const vwRange = [ plotBox.left(), plotBox.right() ];
@@ -301,6 +382,9 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     context.fillText(label, yLabelBox.right()-2*tickLength.value(), y);
   });
 
+  xTitleShape.paint(canvas);
+  yTitleShape.paint(canvas);
+
   /*
   console.log({
     mainAxisTicks,
@@ -309,14 +393,28 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
   */
 
   if (legend.height) {
-    if (legendPosition === 'top') {
-      context.translate(insideBox.left(), insideBox.top());
-    } else {
-      context.translate(insideBox.left(), insideBox.bottom() -legend.height +legend.lineHeight);
-    }
+    context.save();
+    context.translate(legendBox.left(), legendBox.top());
     context.font = legendFont;
     legend.paint(canvas);
+    context.restore();
   }
 
+  if (body.debug?.boxes) {
+    const drawBox = (box, color, dashes = []) => {
+      context.strokeStyle = color;
+      context.setLineDash(dashes);
+      context.strokeRect(box.left(), box.top(), box.width(), box.height());
+    }
+  
+    drawBox(legendBox, '#44f');
+    drawBox(xLabelBox, '#4f4');
+    drawBox(yLabelBox, '#4f4');
+    drawBox(xTitleBox, '#f44');
+    drawBox(yTitleBox, '#f44');
+    drawBox(paintBox, '#f4f');
+    drawBox(plotBox, '#4ff', [10,5]);
+    //drawBox(insideBox, '#555');
+  }
 }
 
