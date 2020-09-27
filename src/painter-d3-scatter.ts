@@ -243,12 +243,13 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
   const xAxisTitleHeight = 2 * measureTitle(titleXAxis, axisTitleFont);
   const yAxisTitleHeight = 2 * measureTitle(titleYAxis, axisTitleFont); // rotated by 90 degrees, this becomes the width of the box
 
+  /*
   console.log(({
     titleXAxis, xAxisTitleHeight,
     titleYAxis, yAxisTitleHeight,
     axisTitleFont,
   }));
-
+  */
 
   context.font = labelFont;
 
