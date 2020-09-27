@@ -36,16 +36,17 @@
     "showLegend": true,
     "legendFontSize": "3.4vmin",
     "legendPosition": "bottom",
+    "legendAlignment": "left",
     "extra": 0.0,
     "axis": {
       "titleFontWeight": 700
     },
     "xAxis": {
-      "title": "X-Axis Titel",
+      "title": "X-Axis Title",
       "lineWidth": 1.0
     },
     "yAxis": {
-      "title": "Y-Axis Titel",
+      "title": "Y-Axis Title",
       "lineWidth": 1.0
     }
   },

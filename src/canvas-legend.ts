@@ -177,13 +177,15 @@ export function createLegendEntry(
   } as IShape;
 }
 
+export type LegendAlignment = 'center' | 'left' | 'right';
 
 export function createLegend(
   canvas: c.Canvas, 
   data: IData[], 
   style: LegendStyle, 
   width: number, 
-  textColor: string
+  textColor: string,
+  alignment: LegendAlignment = 'center',
 ): ILegendShape {
   const legendEntries = data.map(x => createLegendEntry(canvas, style, x.c, x.l, textColor, x));
   const lines: {shape: IShape, x: number}[][] = [];
@@ -212,7 +214,19 @@ export function createLegend(
   let lineHeight = legendEntries.reduce((r,x) => Math.max(r,x.height), 0);  
   let currentTop = 0;
   for (let li = 0, ln = lines.length; li < ln; ++li) {
-    let startX = (width - lineWidths[li]) / 2;
+    let startX: number;
+    switch (alignment) {
+      case 'center':
+      default:
+        startX = (width - lineWidths[li]) / 2;
+        break;
+      case 'left':
+        startX = 0;
+        break;
+      case 'right':
+        startX = width - lineWidths[li];
+        break;
+      }
     for (let ii = 0, ni = lines[li].length; ii < ni; ++ii) {
       const thisOne = lines[li][ii];
       positions.push({x: startX + thisOne.x, y: currentTop });

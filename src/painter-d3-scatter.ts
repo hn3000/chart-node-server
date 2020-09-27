@@ -17,6 +17,7 @@ export interface IScatterChartBody extends IChartBody {
 
     showLegend: boolean;
     legendPosition: 'top' | 'bottom';
+    legendAlignment: 'left' | 'right' | 'center';
     legendFontSize: string|number;
 
   }
@@ -88,6 +89,7 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     locale='de-DE',
     extra = 0.05,
     legendPosition = 'bottom',
+    legendAlignment = 'left',
     showLegend
   } = { axis: {}, ...chart };
 
@@ -270,7 +272,7 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
   context.save();
   context.font = legendFont;
   const legend = showLegend
-               ? createLegend(canvas, data, LegendStyle.SHAPE, legendWidth, textColor)
+               ? createLegend(canvas, data, LegendStyle.SHAPE, legendWidth, textColor, legendAlignment)
                : { ...nullShape(), lineHeight: 0 };
 
   context.restore();
