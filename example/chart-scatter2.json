@@ -32,7 +32,10 @@
     "extra": 0.07,
     "textColor": null,
     "lineWidth": 1.0,
-    "stroke": "#333"
+    "stroke": "#333",
+    "showLegend": true,
+    "legendFontSize": "4vh",
+    "legendAlignment": "right"
   },
   "data": [
     {

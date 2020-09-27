@@ -272,7 +272,7 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
   context.save();
   context.font = legendFont;
   const legend = showLegend
-               ? createLegend(canvas, data, LegendStyle.SHAPE, legendWidth, textColor, legendAlignment)
+               ? createLegend(canvas, data, LegendStyle.SHAPE, legendWidth, textColor, legendAlignment, legendPosition)
                : { ...nullShape(), lineHeight: 0 };
 
   context.restore();

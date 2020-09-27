@@ -178,6 +178,7 @@ export function createLegendEntry(
 }
 
 export type LegendAlignment = 'center' | 'left' | 'right';
+export type LegendPosition = 'top' | 'bottom';
 
 export function createLegend(
   canvas: c.Canvas, 
@@ -186,6 +187,7 @@ export function createLegend(
   width: number, 
   textColor: string,
   alignment: LegendAlignment = 'center',
+  position: LegendPosition = 'top'
 ): ILegendShape {
   const legendEntries = data.map(x => createLegendEntry(canvas, style, x.c, x.l, textColor, x));
   const lines: {shape: IShape, x: number}[][] = [];
@@ -212,7 +214,7 @@ export function createLegend(
     lineWidths[currentLine] = currentWidth;
   }
   let lineHeight = legendEntries.reduce((r,x) => Math.max(r,x.height), 0);  
-  let currentTop = 0;
+  let currentTop = position === 'top' ? 0 : lineHeight;
   for (let li = 0, ln = lines.length; li < ln; ++li) {
     let startX: number;
     switch (alignment) {
@@ -234,7 +236,7 @@ export function createLegend(
     currentTop += Math.ceil(lineHeight*2);
   }
   return ({
-    height: currentTop,
+    height: currentTop - (position === 'top' ? 0 : lineHeight),
     width,
     lineHeight,
     paint(canvas: c.Canvas) {
