@@ -2,7 +2,7 @@
 @base_1=https://hmm.pie.url.hn
 @base_2=http://localhost:3456
 
-@base={{base_1}}
+@base={{base_2}}
 
 ###
 POST {{base}}/pie/png
@@ -226,7 +226,8 @@ Content-Type: application/json
     "background": "#eee",
     "width": 500,
     "height": 500,
-    "showLabels": true
+    "showLabels": true,
+    "showLegend": false
   }
 }
 
@@ -235,10 +236,31 @@ Content-Type: application/json
 ###
 # Timeline chart
 
-POST https://hmm.pie.url.hn/timeline/png
+POST {{base}}/timeline/png
 Content-Type: application/json
 
 {
+  "meta": {
+    "value": "v",
+    "timestamp": "t"
+  },
+  "chart": {
+    "background": "#666",
+    "width": 1000,
+    "height": 700,
+    "cornerRadius": 0,
+    "innerRadius": 0,
+    "lineWidth": 2,
+    "stroke": "#fff",
+    "colors": [
+      "#8c2237",
+      "#cc4422",
+      "#954",
+      "#935",
+      "#953",
+      "#936"
+    ]
+  },
   "data":   [
     {"t":1555970400000,"v":138.885},
     {"t":1555884000000,"v":138.279},
@@ -490,27 +512,192 @@ Content-Type: application/json
     {"t":1534629600000,"v":205.35800000000017},
     {"t":1534543200000,"v":203.92800000000017},
     {"t":1534456800000,"v":206.82200000000017}
-  ],
-  "meta": {
-    "value": "v",
-    "timestamp": "t"
-  },
-  "chart": {
-    "background": "#333",
-    "width": 1000,
-    "height": 700,
-    "cornerRadius": 0,
-    "innerRadius": 0,
-    "lineWidth": 2,
-    "stroke": "#fff",
-    "colors": [
-      "#8c2237",
-      "#cc4422",
-      "#954",
-      "#935",
-      "#953",
-      "#936"
-    ]
-  }
+  ]
 }
 
+###
+
+POST {{base}}/scatter/png
+
+{
+    "data": [{
+        "l": "Geronimo!",
+        "x": 0.023324648980779017,
+        "xl": "2,33%",
+        "y": 0.052,
+        "yl": "5,2%"
+    }, {
+        "l": "Gurkensalat Blabla X (Y)",
+        "x": 0.0030515462539624227,
+        "xl": ",31%",
+        "y": 0.0219,
+        "yl": "2,19%"
+    }, {
+        "l": "Kartoffelsalat Irgendwas Irgendwas x (y)",
+        "x": 0.002156907190647539,
+        "xl": ",22%",
+        "y": 0.0325,
+        "yl": "3,25%"
+    }, {
+        "l": "Beispiel Label",
+        "x": 0.007615331116517465,
+        "xl": ",76%",
+        "y": 0.0307,
+        "yl": "3,07%"
+    }, {
+        "l": "Beispiel Datenpunkt irgendwas",
+        "x": 0.015382383418288903,
+        "xl": "1,54%",
+        "y": 0.0789,
+        "yl": "7,89%"
+    }, {
+        "l": "Ziemlich langer Text hier",
+        "x": 0.04416412991560925,
+        "xl": "4,42%",
+        "y": 0.1362,
+        "yl": "13,62%"
+    }, {
+        "l": "Einlangername",
+        "x": 0.018204656098533833,
+        "xl": "1,82%",
+        "y": 0.0059,
+        "yl": ",59%"
+    }, {
+        "l": "Deutlichlängerername",
+        "x": -0.00815411880521999,
+        "xl": "-,82%",
+        "y": 0.0684,
+        "yl": "6,84%"
+    }, {
+        "l": "Mittellang 1.0 AB",
+        "x": 0.1489463276355285,
+        "xl": "14,89%",
+        "y": 0.1973,
+        "yl": "19,73%"
+    }, {
+        "l": "Multi-Irgendwas Beschriftung XY",
+        "x": -0.02542482809570057,
+        "xl": "-2,54%",
+        "y": 0.0448,
+        "yl": "4,48%"
+    }],
+    "meta": {
+        "legend": "l",
+        "xLabel": "xl",
+        "xValue": "x",
+        "yLabel": "yl",
+        "yValue": "y"
+    },
+    "chart": {
+        "weight": 500,
+        "height": 240,
+        "colors": ["#8c2237", "#9a7428", "#d6ae65", "#77544b", "#a1687f", "#8674C5", "#74C5BF", "#567CAF", "#60AD5A", "#9D4993"],
+        "shapes": ["M0 0 L50 0 L50 50 L0 50", "M0 0 L50 0 L50 50 L0 50", "M0 0 L50 0 L50 50 L0 50", "M0 0 L50 0 L50 50 L0 50", "M0 0 L50 0 L50 50 L0 50", "M0 0 L50 0 L50 50 L0 50", "M0 0 L50 0 L50 50 L0 50", "M0 0 L50 0 L50 50 L0 50", "M0 0 L50 0 L50 50 L0 50", "M0 0 L50 0 L50 50 L0 50"],
+        "xAxis": {
+            "label": "Der eine Wert (x)",
+            "labelStyle": "percent",
+            "labelPrecision": 1,
+            "lineWidth": 1.0
+        },
+        "yAxis": {
+            "label": "Der andere Wert (y)",
+            "labelStyle": "percent",
+            "labelPrecision": 1,
+            "lineWidth": 1.0
+        }
+    }
+}
+
+
+###
+
+POST {{base}}/scatter/png
+
+{
+  "data": [{
+      "l": "Geronimo!",
+      "x": 0.023324648980779017,
+      "xl": "2,33%",
+      "y": 0.052,
+      "yl": "5,2%"
+  }, {
+      "l": "Gurkensalat Blabla X (Y)",
+      "x": 0.0030515462539624227,
+      "xl": ",31%",
+      "y": 0.0219,
+      "yl": "2,19%"
+  }, {
+      "l": "Kartoffelsalat Irgendwas Irgendwas x (y)",
+      "x": 0.002156907190647539,
+      "xl": ",22%",
+      "y": 0.0325,
+      "yl": "3,25%"
+  }, {
+      "l": "Beispiel Label",
+      "x": 0.007615331116517465,
+      "xl": ",76%",
+      "y": 0.0307,
+      "yl": "3,07%"
+  }, {
+      "l": "Beispiel Datenpunkt irgendwas",
+      "x": 0.015382383418288903,
+      "xl": "1,54%",
+      "y": 0.0789,
+      "yl": "7,89%"
+  }, {
+      "l": "Ziemlich langer Text hier",
+      "x": 0.04416412991560925,
+      "xl": "4,42%",
+      "y": 0.1362,
+      "yl": "13,62%"
+  }, {
+      "l": "Einlangername",
+      "x": 0.018204656098533833,
+      "xl": "1,82%",
+      "y": 0.0059,
+      "yl": ",59%"
+  }, {
+      "l": "Deutlichlängerername",
+      "x": -0.00815411880521999,
+      "xl": "-,82%",
+      "y": 0.0684,
+      "yl": "6,84%"
+  }, {
+      "l": "Mittellang 1.0 AB",
+      "x": 0.1489463276355285,
+      "xl": "14,89%",
+      "y": 0.1973,
+      "yl": "19,73%"
+  }, {
+      "l": "Multi-Irgendwas Beschriftung XY",
+      "x": -0.02542482809570057,
+      "xl": "-2,54%",
+      "y": 0.0448,
+      "yl": "4,48%"
+  }],
+  "meta": {
+    "legend": "l",
+    "xLabel": "xl",
+    "xValue": "x",
+    "yLabel": "yl",
+    "yValue": "y"
+  },
+  "chart": {
+    "width": 1000,
+    "height": 480,
+    "colors": ["#8c2237", "#9a7428", "#d6ae65", "#77544b", "#a1687f", "#8674C5", "#74C5BF", "#567CAF", "#60AD5A", "#9D4993"],
+    "shapes": ["m0.5 0.5 h32 v32 h-32 0z", "M16-6.627L38.627 16 16 38.627-6.627 16z", "m16,0 16,26.5 -32,0z", "M 16, 16 m -16, 0 a 16,16 0 1,0 32,0 a 16,16 0 1,0 -32,0z"],
+    "xAxis": {
+        "label": "Der eine Wert (x)",
+        "labelStyle": "percent",
+        "labelPrecision": 1,
+        "lineWidth": 1.0
+    },
+    "yAxis": {
+        "label": "Der andere Wert (y)",
+        "labelStyle": "percent",
+        "labelPrecision": 1,
+        "lineWidth": 1.0
+    }
+  }
+}

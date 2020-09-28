@@ -164,12 +164,22 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   timeAxisTicks.forEach(x => {
     axisLine([[x,axisLineY],[x,axisLineTick]])
   });
-  context.strokeStyle = chart.axis.stroke;
-  context.lineWidth = dimension(chart.axis.lineWidth).resolve(env0).value();
+  if (chart.axis) {
+    if (chart.axis.stroke) {
+      context.strokeStyle = chart.axis?.stroke;
+    }
+    if (chart.axis.lineWidth) {
+      context.lineWidth = dimension(chart.axis.lineWidth).resolve(env0).value();
+    }
+  }
   context.stroke();
 
   context.beginPath();
-  context.fillStyle = chart.axis.textColor;
+  if (chart.axis) {
+    if (chart.axis.stroke) {
+      context.fillStyle = chart.axis.textColor;
+    }
+  }
   context.textBaseline = timeAxisPosition === 'top' ? 'bottom' : 'top';
   context.textAlign = "center";
   timeAxisTicks.forEach((x,i) => {
