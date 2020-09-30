@@ -1,0 +1,76 @@
+{
+  "data": [
+    {
+      "l": "Geronimo",
+      "x": -0.0009881718668997008,
+      "xl": "-,1%",
+      "y": 0.0312,
+      "yl": "3,12%"
+    },
+    {
+      "l": "Eine-Möhre Salat 7 (a)",
+      "x": 0.0022881984312947967,
+      "xl": ",23%",
+      "y": 0.0216,
+      "yl": "2,16%"
+    },
+    {
+      "l": "Zwei-Kartoffel Salat mit Gurken l (c)",
+      "x": -0.0015111507890323006,
+      "xl": "-,15%",
+      "y": 0.0331,
+      "yl": "3,31%"
+    }
+  ],
+  "meta": {
+    "legend": "l",
+    "xLabel": "xl",
+    "xValue": "x",
+    "yLabel": "yl",
+    "yValue": "y"
+  },
+  "chart": {
+    "width": 2750,
+    "height": 1300,
+    "colors": [
+      "#8C2237",
+      "#9A7428",
+      "#D6AE65",
+      "#77544B",
+      "#A1687F",
+      "#8674C5",
+      "#74C5BF",
+      "#567CAF",
+      "#60AD5A",
+      "#9D4993"
+    ],
+    "shapes": [
+      "M4,4 28,4 28,28 4,28z",
+      "M16,32 32,6 0,6z",
+      "M16,0 32,26 0,26z",
+      "M16,32 32,16 16,0 0,16z",
+      "M0,16 Q1.4,30.6 16,32 30.6,30.6 32,16 30.6,1.4 16,0 1.4,1.4 0,16z"
+    ],
+    "labelStyle": "percent",
+    "labelPrecision": 2,
+    "shapeSize": "5vmin",
+    "showLegend": true,
+    "labelFontSize": "3vmin",
+    "legendFontSize": "3vmin",
+    "legendPosition": "bottom",
+    "extra": 0.0,
+    "axis": { "titleFontWeight": 700.0 },
+    "xAxis": {
+      "title": "Versmaß",
+      "textColor": null,
+      "lineWidth": 1.0,
+      "stroke": null
+    },
+    "yAxis": {
+      "title": "Rabenvogel",
+      "textColor": null,
+      "lineWidth": 1.0,
+      "stroke": null
+    }
+  }
+}
