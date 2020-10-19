@@ -33,6 +33,7 @@ export interface IChartSpec {
   months?: string[];
 
   axis?: {
+    nice?: boolean;
     stroke: string;
     lineWidth: number;
     textColor: string;
@@ -45,6 +46,8 @@ export interface IChartSpec {
   };
   timeAxis?: {
     position: 'top' | 'bottom';
+    nice?: boolean;
+    tickCount?:number;
     labelFontSize?: string|number;
     labelFontWeight?: number|string;
     labelFontFamily?: string;
@@ -54,6 +57,8 @@ export interface IChartSpec {
   };
   mainAxis?: {
     position: 'top' | 'bottom';
+    nice?: boolean;
+    tickCount?:number;
     labelPrecision?: number;
     labelStyle?: 'decimal'|'percent'|'currency';
     labelCurrency?: string;
@@ -67,6 +72,8 @@ export interface IChartSpec {
   };
   valueAxis?: {
     position: 'left';
+    nice?: boolean;
+    tickCount?:number;
     labelPrecision?: number;
     labelStyle?: 'decimal'|'percent'|'currency';
     labelCurrency?: string;
@@ -80,6 +87,8 @@ export interface IChartSpec {
   }
   xAxis?: {
     position: 'top' | 'bottom';
+    nice?: boolean;
+    tickCount?:number;
     labelPrecision?: number;
     labelStyle?: 'decimal'|'percent'|'currency';
     labelCurrency?: string;
@@ -93,6 +102,8 @@ export interface IChartSpec {
   }
   yAxis?: {
     position: 'left';
+    nice?: boolean;
+    tickCount?:number;
     labelPrecision?: number;
     labelStyle?: 'decimal'|'percent'|'currency';
     labelCurrency?: string;

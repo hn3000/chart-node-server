@@ -72,6 +72,7 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     labelFontFamily = 'Helvetica,"sans-serif"',
     labelFontWeight = 400,
     axis: {
+      nice: niceAxis = true,
       labelFontFamily: labelFontFamilyAxis = labelFontFamily,
       labelFontWeight: labelFontWeightAxis = labelFontWeight,
       titleFontFamily: titleFontFamilyAxis = labelFontFamily,
@@ -101,6 +102,8 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
 
   const {
     position: xAxisPosition = 'bottom',
+    nice: niceX = niceAxis,
+    tickCount: tickCountX = 6,
     labelPrecision: xLabelPrecision = labelPrecision,
     labelStyle: xLabelStyle = labelStyle,
     labelCurrency: xLabelCurrency = labelCurrency,
@@ -119,6 +122,8 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
 
   const {
     position: yAxisPosition = 'left',
+    nice: niceY = niceAxis,
+    tickCount: tickCountY = 4,
     labelPrecision: yLabelPrecision = labelPrecision,
     labelStyle: yLabelStyle = labelStyle,
     labelCurrency: yLabelCurrency = labelCurrency,
@@ -196,8 +201,15 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
   const valueScaleXU = d3.scaleLinear().domain([-extraX + minX, maxX + extraX]);
   const valueScaleYU = d3.scaleLinear().domain([-extraY + minY, maxY + extraY]);
 
-  const valueScaleXTicks = valueScaleXU.ticks(6);
-  const valueScaleYTicks = valueScaleYU.ticks(4);
+  if (niceX) {
+    valueScaleXU.nice(tickCountX);
+  }
+  if (niceY) {
+    valueScaleYU.nice(tickCountY);
+  }
+
+  const valueScaleXTicks = valueScaleXU.ticks(tickCountX);
+  const valueScaleYTicks = valueScaleYU.ticks(tickCountY);
 
   // set up label font
 
