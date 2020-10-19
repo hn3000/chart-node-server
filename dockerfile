@@ -57,4 +57,4 @@ COPY example/chart-*json ./example/
 
 EXPOSE 3456
 
-CMD node --icu-data-dir=node_modules/full-icu out/index.js || sleep 1800
+CMD node --icu-data-dir=node_modules/full-icu out/index.js
