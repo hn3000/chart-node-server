@@ -3,8 +3,8 @@ import { IPieBody, IChartBody, IData, IChartSpec } from './api';
 import { PieArcDatum } from 'd3';
 import * as c from 'canvas';
 import { LegendStyle, createLegend, nullShape } from './canvas-legend';
-import { IUnitFactors, dimension, dimensionProxy } from './dimension';
-import { box, IBox } from './position';
+import { IUnitFactors, dimensionProxy } from './dimension';
+import { position, box, IBox, IPosition } from './position';
 import { valueGetter } from './util';
 
 export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
@@ -96,6 +96,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
   const {
     innerRadius,
     outerRadius,
+    labelRadius = outerRadius,
     cornerRadius,
     lineWidth,
     padAngle,
@@ -141,27 +142,72 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     if (showLabels) {
       context.beginPath();
 
-      let centroid = drawArc.centroid(x);
-      let len = Math.sqrt(centroid.reduce((r, x) => r + x * x, 0));
-      let labelPos = centroid.map(t => (t / len) * outerRadius.value() * 1.1) as [number, number];
-      if (showLabelDebug) {
-        context.moveTo(...centroid);
-        context.lineTo(...labelPos);
-        context.strokeStyle = "#444";
-        context.lineWidth = 2;
-        context.stroke();
-      }
-
-      labelPos = centroid.map(t => (t / len) * outerRadius.value() * 1.2) as [number, number];
       context.font = labelFont;
       let labelTxt = x.data.vl || `${x.value.toFixed(1)}`;
-
       context.save();
       context.textAlign = 'center';
       context.textBaseline = 'middle';
       context.fillStyle = labelColor;
-      context.fillText(labelTxt, ...labelPos);
+
+      const tm = context.measureText(labelTxt);
+      //console.log('labelPos: ', labelPos, tm);
+      const { 
+        actualBoundingBoxLeft,
+        actualBoundingBoxAscent: ascent,
+        actualBoundingBoxDescent: descent,
+        width
+      } = tm;
+      const height = ascent+descent;
+
+      const centroid = drawArc.centroid(x);
+      const centroidPosition = position(...centroid);
+
+      let labelDisp = position((width-height)/2, 0);
+      if (centroidPosition.x() < 0) {
+        labelDisp = position(labelDisp.dimX().neg(), 0);
+      }
+      const labelR = labelRadius.value() + height;
+      const labelPosition = centroidPosition.withLength(labelR);
+      const labelCenter = labelPosition.sum(labelDisp);
+ 
+      context.fillText(labelTxt, ...labelCenter.xy());
       context.restore();
+
+
+      if (showLabelDebug) {
+        context.moveTo(labelR,0);
+        context.ellipse(0,0, labelR,labelR, 0, 0, Math.PI*2, false);
+        context.moveTo(...centroid);
+        context.lineTo(...labelPosition.xy());
+        context.strokeStyle = "#444";
+        context.lineWidth = 2;
+        context.moveTo(...labelPosition.rightBy(height).xy());
+        context.ellipse(...labelPosition.xy(), height,height, 0, 0,Math.PI*2, false);
+
+        const labelBoxTL = labelCenter.relative(-actualBoundingBoxLeft, -ascent);
+        const labelBoxBR = labelBoxTL.relative(width, height);
+        const labelBox = box(labelBoxTL, labelBoxBR);
+        let corner: IPosition;
+        switch (centroidPosition.quadrant()) {
+          default:
+          case 0: corner = labelBox.topLeft(); break;
+          case 1: corner = labelBox.topRight(); break;
+          case 2: corner = labelBox.bottomRight(); break;
+          case 3: corner = labelBox.bottomLeft(); break;
+        }
+
+        context.textAlign = 'center';
+        context.textBaseline = 'middle';
+        context.fillStyle = labelColor;
+        context.moveTo(...labelBox.topLeft().xy());
+        context.rect(...labelBox.xywh());
+
+        context.moveTo(...corner.xy());
+        context.ellipse(...corner.xy(), 3, 3, 0,0,Math.PI*2, false);
+
+        context.stroke();
+      }
+
       /*
        */
     }

@@ -6,6 +6,35 @@ import { UnitFactorsLength } from '../src/dimension';
 
 
 export class PositionTest extends TestClass {
+    constructor() {
+        super();
+        this.parameterizeUnitTest(
+            this.testPositionQuadrant,
+            [
+                [5,5,0],
+                [10,5,0],
+                [5,10,0],
+                [-5,5,1],
+                [-5,10,1],
+                [-10,5,1],
+                [-5,-5,2],
+                [5,-5,3],
+            ]
+        )
+        this.parameterizeUnitTest(
+            this.testPositionOctant,
+            [
+                [5,5,0],
+                [10,5,0],
+                [5,10,1],
+                [-5,5,2],
+                [-5,10,2],
+                [-10,5,3],
+                [-5,-5,4],
+                [5,-5,6],
+            ]
+        )
+    }
     testDimensionFromNumbers() {
         let d = position(12, 23);
         this.areIdentical(12, d.x());
@@ -44,6 +73,15 @@ export class PositionTest extends TestClass {
         let d = position(12, 23).belowBy(1);
         this.areIdentical(12, d.x());
         this.areIdentical(24, d.y());
+    }
+    testPositionQuadrant(x: number, y: number, quadrant: number) {
+        let p = position(x,y);
+        this.areIdentical(quadrant, p.quadrant());
+    }
+
+    testPositionOctant(x: number, y: number, octant: number) {
+        let p = position(x,y);
+        this.areIdentical(octant, p.octant(), `expected (${x},${y}) to be in octant ${octant} instead ${p.octant()}`);
     }
 
     testBoxFromNumbers() {

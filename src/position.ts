@@ -8,6 +8,8 @@ export interface IPosition {
     dimX(): IDimension;
     dimY(): IDimension;
 
+    sum(that: IPosition): IPosition;
+    difference(that: IPosition): IPosition;
     relative(x: DimensionSpec, y?: DimensionSpec): IPosition;
 
     leftBy(delta: DimensionSpec): IPosition;
@@ -18,7 +20,16 @@ export interface IPosition {
 
     towards(that: IPosition, dx: number, dy?: number): IPosition;
 
+    withLength(len: number): IPosition;
+
     resolve(env: IUnitFactors): this;
+
+    xy(): [number, number];
+
+    length(): number;
+
+    quadrant(): number; // 0..3
+    octant(): number; // 0..7
 
 }
 
@@ -38,10 +49,18 @@ export interface IBox {
     width(): number;
     height(): number;
 
+    xywh(): [number,number,number,number];
+    tlbr(): [number,number,number,number];
+
     insideBox(deltaX: DimensionSpec, deltaY?: DimensionSpec): IBox;
     outsideBox(deltaX: DimensionSpec, deltaY?: DimensionSpec): IBox;
 
     resolve(env: IUnitFactors): this;
+}
+
+
+function length(x,y) {
+    return Math.sqrt(x*x + y*y);
 }
 
 abstract class PositionBase implements IPosition {
@@ -53,6 +72,16 @@ abstract class PositionBase implements IPosition {
     abstract dimY(): IDimension;
     abstract resolve(env: IUnitFactors): this;
 
+
+    sum(that: IPosition) {
+        const res = this._maybeResolve(that);
+        return this._maybeResolve(new RelativePosition(this, res.dimX(), res.dimY()));
+    }
+
+    difference(that: IPosition) {
+        const res = this._maybeResolve(that);
+        return this._maybeResolve(new RelativePosition(this, res.dimX().neg(), res.dimY().neg()));
+    }
     relative(dx: DimensionSpec, dy: DimensionSpec = dx) {
         return this._maybeResolve(new RelativePosition(this, dx, dy));
     }
@@ -78,6 +107,68 @@ abstract class PositionBase implements IPosition {
         );
         return this._maybeResolve(result);
     }
+
+    withLength(newLength: number): IPosition {
+        const myLength = this.length();
+        const scale = x => x / myLength * newLength;
+        const result = position(scale(this.x()), scale(this.y()));
+        return this._maybeResolve(result);
+    }
+
+    length() {
+        return length(this.x(), this.y());
+    }
+
+    xy() : [number, number] {
+        return [ this.x(), this.y() ];
+    }
+
+    quadrant() : number {
+        const yPos = this.y() >= 0;
+        const xPos = this.x() >= 0;
+
+        let q = yPos ? 0 : 2;
+        q += (xPos === yPos) ? 0 : 1;
+
+        return q;
+    }
+
+
+    //      2 | 1
+    //   3    |    0
+    // --------------
+    //   4    |    7
+    //      5 | 6
+
+
+    //
+    //  steep   ==   Q     O
+    //  ------|----|---|-------
+    //   0    |  0 | 0 |   0   
+    //   0    |  1 | 0 |   0
+    //   1    |  0 | 0 |   1     steep && !eq && even
+    //   0    |  0 | 1 |   3     steep && !eq && even
+    //   0    |  1 | 1 |   2
+    //   1    |  0 | 1 |   2
+    //   0    |  0 | 2 |   4
+    //   0    |  1 | 2 |   4
+    //   1    |  0 | 2 |   5     steep && !eq && even
+    //   0    |  0 | 3 |   7     !steep && !eq && !even
+    //   0    |  1 | 3 |   6
+    //   1    |  0 | 3 |   6
+    //
+
+    octant() : number {
+        const quadrant = this.quadrant();
+
+        const steep = Math.abs(this.x()) < Math.abs(this.y());
+        const halfAngle = Math.abs(this.x()) == Math.abs(this.y())
+        const evenQ = 0 == quadrant % 2
+        const plusOne = (steep == evenQ) && !halfAngle;
+
+        return 2*quadrant + (plusOne ? 1 : 0);
+    }
+
 
     protected _env(): IUnitFactors {
         return undefined;
@@ -198,6 +289,10 @@ export class Box implements IBox {
 
     height() { return this.bottom() - this.top(); }
     width() { return this.right() - this.left(); }
+
+
+    xywh(): [number,number,number,number] { return [...this.topLeft().xy(), this.width(), this.height()]; }
+    tlbr(): [number,number,number,number] { return [ this.top(), this.left(), this.bottom(), this.right() ]; }
 
     insideBox(deltaX: DimensionSpec, deltaY = deltaX) {
         let deltaDimX = dimension(deltaX);

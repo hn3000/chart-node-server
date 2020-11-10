@@ -105,7 +105,9 @@ export class DimensionTest extends TestClass {
         let d = dimension('1000');
         let dn = d.neg();
         this.areIdentical(d.unit, dn.unit, 'unit of neg should be original');
-        this.areIdentical(-d.number, dn.number, 'number of neg should be negative of original');
+
+        this.isTruthy(d.number, 'original dimension should have numeric value');
+        this.areIdentical(-d.number!, dn.number, 'number of neg should be negative of original');
     }
     testDimensionPlus() {
         let d = dimension('1000');

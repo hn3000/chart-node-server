@@ -12,7 +12,7 @@
     "timestamp": "t"
   },
   "chart": {
-"startAngle": "-1.6",
+    "startAngle": "-1.6",
     "showLegend": true,
     "legendPosition": "bottom",
     "legendFontSize": "3vmin",
