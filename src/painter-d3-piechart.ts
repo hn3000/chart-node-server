@@ -58,9 +58,9 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
   const env1: IUnitFactors = { ...env0, em: labelFontSize.value()};
 
   const chartBox = box(0, 0, canvas.width, canvas.height).insideBox(padX, padY).resolve(env1);
-  console.log(`chart box ${chartBox.left()} ${chartBox.top()} ${chartBox.right()} ${chartBox.bottom()}`);
+  //console.log(`chart box ${chartBox.left()} ${chartBox.top()} ${chartBox.right()} ${chartBox.bottom()}`);
   let pieBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(chartBox.width())).resolve(env1);
-  console.log(`pie box ${pieBox.left()} ${pieBox.top()} ${pieBox.right()} ${pieBox.bottom()}`);
+  //console.log(`pie box ${pieBox.left()} ${pieBox.top()} ${pieBox.right()} ${pieBox.bottom()}`);
   let legendShape = nullShape();
   if (showLegend) {
     context.font = legendFont;
@@ -125,7 +125,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
   let drawLine = d3.line().context(context);
 
   //console.log(pie);
-  console.log('pos', pieBox.center().x(), pieBox.center().y());
+  //console.log('pos', pieBox.center().x(), pieBox.center().y());
   context.translate(pieBox.center().x(), pieBox.center().y());
   pie.forEach(x => {
     context.beginPath();
