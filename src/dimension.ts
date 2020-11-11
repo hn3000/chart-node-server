@@ -54,6 +54,10 @@ abstract class DimensionBase implements IDimension {
   resolve(env: IUnitFactors) {
     return new DimensionResolved(this, env);
   }
+
+  toString() {
+    return `${this.number}${this.unit}`;
+  }
 }
 
 abstract class DimensionBaseNeg extends DimensionBase implements IDimension {
@@ -105,12 +109,17 @@ class DimensionResolved extends DimensionBase implements IDimension {
     return result;
   }
 
-  resolve(env: IUnitFactors): this {
+  resolve(env: IUnitFactors): IDimension {
     if (env === this._env) {
       return this;
     }
-    return super.resolve(env);
+    return this._dim.resolve(env);
   }
+
+  toString() {
+    return `${this.number}${this.unit} = ${this.value()}`;
+  }
+
 
   private _dim: IDimension;
   private _env: IUnitFactors;
