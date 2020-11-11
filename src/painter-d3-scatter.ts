@@ -94,7 +94,11 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     showLegend
   } = { axis: {}, ...chart };
 
-  const axisDimensions = dimensionProxy(chart.axis || { }, { labelFontSize, titleFontSize: labelFontSize }, () => env0);
+  const axisDimensions = dimensionProxy(
+    chart.axis || { }, 
+    { labelFontSize, titleFontSize: labelFontSize }, 
+    () => env0
+  );
   const {
     labelFontSize: labelFontSizeAxis = labelFontSize,
     titleFontSize: titleFontSizeAxis = labelFontSize,
@@ -114,7 +118,11 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     title: titleXAxis = '',
   } = chart.xAxis || chart.mainAxis || { };
 
-  const xAxisDimensions = dimensionProxy(chart.xAxis || chart.mainAxis || { }, { labelFontSize: labelFontSizeAxis, titleFontSize: titleFontSizeAxis });
+  const xAxisDimensions = dimensionProxy(
+    chart.xAxis || chart.mainAxis || { }, 
+    { labelFontSize: labelFontSizeAxis, titleFontSize: titleFontSizeAxis },
+    () => env0
+  );
   const {
     labelFontSize: labelFontSizeXAxis = labelFontSizeAxis,
     titleFontSize: titleFontSizeXAxis = titleFontSizeAxis,
@@ -134,12 +142,17 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     title: titleYAxis = '',
   } = chart.yAxis || chart.valueAxis || { };
 
-  const yAxisDimensions = dimensionProxy(chart.yAxis || chart.valueAxis || { }, { labelFontSize: labelFontSizeAxis, titleFontSize: titleFontSizeAxis });
+  const yAxisDimensions = dimensionProxy(
+    chart.yAxis || chart.valueAxis || { }, 
+    { labelFontSize: labelFontSizeAxis, titleFontSize: titleFontSizeAxis },
+    () => env0
+  );
   const {
     labelFontSize: labelFontSizeYAxis = labelFontSizeAxis,
     titleFontSize: titleFontSizeYAxis = titleFontSizeAxis,
   } = yAxisDimensions;
 
+  console.log({titleFontSizeAxis, titleFontSizeXAxis, titleFontSizeYAxis});
 
   const getXValue = valueGetter('xValue', meta);
   const getYValue = valueGetter('yValue', meta);
@@ -193,7 +206,8 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
   const chartBox = box(0,0, canvas.width, canvas.height).insideBox(padX, padY).resolve(env0);
   const labelFont = `${labelFontSize.value()}px ${labelFontFamily}`;
   const legendFont = `${legendFontSize.value()}px ${labelFontFamily}`;
-  const axisTitleFont = `${titleFontWeightAxis} ${titleFontSizeAxis.value()}px ${labelFontFamily}`;
+  const axisXTitleFont = `${titleFontWeightAxis} ${titleFontSizeXAxis.value()}px ${labelFontFamily}`;
+  const axisYTitleFont = `${titleFontWeightAxis} ${titleFontSizeYAxis.value()}px ${labelFontFamily}`;
 
   const extraX = (maxX - minX) * extra;
   const extraY = (maxY - minY) * extra;
@@ -252,8 +266,8 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     return Math.max(tm.actualBoundingBoxDescent, 0);
   };
 
-  const xAxisTitleHeight = 2 * measureTitle(titleXAxis, axisTitleFont);
-  const yAxisTitleHeight = 2 * measureTitle(titleYAxis, axisTitleFont); // rotated by 90 degrees, this becomes the width of the box
+  const xAxisTitleHeight = 2 * measureTitle(titleXAxis, axisXTitleFont);
+  const yAxisTitleHeight = 2 * measureTitle(titleYAxis, axisYTitleFont); // rotated by 90 degrees, this becomes the width of the box
 
   /*
   console.log(({
@@ -301,20 +315,20 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
 
   // yAxis title is rotated 90°, height becomes width
   yTitleBox = box(paintBox.topLeft(), paintBox.bottomLeft().rightBy(yAxisTitleHeight)).resolve(env0);
-  const yTitleShape = createTextShape(canvas, yTitleBox.center(), titleYAxis, axisTitleFont, 'middle', 'center', -90);
+  const yTitleShape = createTextShape(canvas, yTitleBox.center(), titleYAxis, axisYTitleFont, 'middle', 'center', -90);
   let xTitleShape: IShape;
   
   if (xAxisPosition === 'top') {
     let cornerPos = paintBox.topLeft().rightBy(yAxisWidth).belowBy(xAxisTitleHeight+valueAxisXHeight);
     xTitleBox = box(paintBox.topLeft(), paintBox.topRight().belowBy(xAxisTitleHeight)).resolve(env0);
-    xTitleShape = createTextShape(canvas, xTitleBox.center(), titleXAxis, axisTitleFont, 'middle', 'center');
+    xTitleShape = createTextShape(canvas, xTitleBox.center(), titleXAxis, axisXTitleFont, 'middle', 'center');
     xLabelBox = box(cornerPos, insideBox.topRight()).resolve(env0);
     yLabelBox = box(yTitleBox.bottomLeft(), cornerPos).resolve(env0);
     plotBox = box(paintBox.bottomLeft().rightBy(yAxisWidth), xLabelBox.bottomRight());
   } else { // xAxisPosition === 'bottom'
     let cornerPos = paintBox.bottomLeft().rightBy(yAxisWidth).aboveBy(xAxisTitleHeight+valueAxisXHeight);
     xTitleBox = box(paintBox.bottomLeft(), paintBox.bottomRight().aboveBy(xAxisTitleHeight)).resolve(env0);
-    xTitleShape = createTextShape(canvas, xTitleBox.center(), titleXAxis, axisTitleFont, 'middle', 'center');
+    xTitleShape = createTextShape(canvas, xTitleBox.center(), titleXAxis, axisXTitleFont, 'middle', 'center');
     xLabelBox = box(cornerPos, insideBox.bottomRight()).resolve(env0);
     yLabelBox = box(yTitleBox.topLeft(), cornerPos).resolve(env0);
     plotBox = box(paintBox.topLeft().rightBy(yAxisWidth), xLabelBox.topRight());
