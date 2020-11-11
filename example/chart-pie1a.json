@@ -1,0 +1,33 @@
+{
+  "data": [
+    { "v": 35.2, "l": "Produkt D", "vl": "35,2%" },
+    { "v": 25, "l": "Produkt B", "vl": "25%" },
+    { "v": 25, "l": "Produkt C", "vl": "25%" },
+    { "v": 14.8, "l": "Produkt A", "vl": "14,8%" }
+  ],
+  "meta": {
+    "value": "v",
+    "label": "vl",
+    "legend": "l"
+  },
+  "chart": {
+    "showLabelDebug": false,
+    "labelColor": "#333",
+    "labelFont": "44px sans-serif",
+    "background": "#fff",
+    "width": 1000,
+    "height": 1000,
+    "cornerRadius": 0,
+    "innerRadius": 0,
+    "lineWidth": 8,
+    "stroke": "#fff",
+    "colors": [
+      "#8c2237",
+      "#cc4422",
+      "#954",
+      "#935",
+      "#953",
+      "#936"
+    ]
+  }
+}
