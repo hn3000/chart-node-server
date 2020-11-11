@@ -8,8 +8,8 @@ export interface IPosition {
     dimX(): IDimension;
     dimY(): IDimension;
 
-    sum(that: IPosition): IPosition;
-    difference(that: IPosition): IPosition;
+    plus(that: IPosition): IPosition;
+    minus(that: IPosition): IPosition;
     relative(x: DimensionSpec, y?: DimensionSpec): IPosition;
 
     leftBy(delta: DimensionSpec): IPosition;
@@ -73,14 +73,12 @@ abstract class PositionBase implements IPosition {
     abstract resolve(env: IUnitFactors): this;
 
 
-    sum(that: IPosition) {
-        const res = this._maybeResolve(that);
-        return this._maybeResolve(new RelativePosition(this, res.dimX(), res.dimY()));
+    plus(that: IPosition) {
+        return this._maybeResolve(new RelativePosition(this, that.dimX(), that.dimY()));
     }
 
-    difference(that: IPosition) {
-        const res = this._maybeResolve(that);
-        return this._maybeResolve(new RelativePosition(this, res.dimX().neg(), res.dimY().neg()));
+    minus(that: IPosition) {
+        return this._maybeResolve(new RelativePosition(this, that.dimX().neg(), that.dimY().neg()));
     }
     relative(dx: DimensionSpec, dy: DimensionSpec = dx) {
         return this._maybeResolve(new RelativePosition(this, dx, dy));

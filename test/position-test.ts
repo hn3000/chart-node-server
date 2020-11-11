@@ -34,6 +34,34 @@ export class PositionTest extends TestClass {
                 [5,-5,6],
             ]
         )
+        this.parameterizeUnitTest(
+            this.testPositionLength,
+            [
+                [100,0, 100],
+                [0,100, 100],
+                [100,100, 100*Math.SQRT2],
+            ]
+        );
+        this.parameterizeUnitTest(
+            this.testPositionWithLength,
+            [
+                [100,0, 100],
+                [100,0, 1000],
+                [0,100, 100],
+                [0,100, 333],
+                [100,100, 100],
+                [100,100, 1],
+            ]
+        );
+    }
+
+    areWithinEpsilon(a: number, b: number, epsilon: number = 1e-10) {
+        if (a !== a || b !== b) {
+            this.isFalse(true, `NaN is not within epsilon of anything: ${a}, ${b}`);
+        }
+        if (Math.abs(a-b) > epsilon) {
+            this.isFalse(true, `are not within epsilon of each other: ${a}, ${b}: ${Math.abs(a-b)} > ${epsilon}`);
+        }
     }
     testDimensionFromNumbers() {
         let d = position(12, 23);
@@ -82,6 +110,48 @@ export class PositionTest extends TestClass {
     testPositionOctant(x: number, y: number, octant: number) {
         let p = position(x,y);
         this.areIdentical(octant, p.octant(), `expected (${x},${y}) to be in octant ${octant} instead ${p.octant()}`);
+    }
+
+    testPositionLength(x: number, y: number, length: number) {
+        let p = position(x,y);
+        this.areWithinEpsilon(length, p.length());
+    }
+
+    testPositionWithLength(x: number, y: number, length: number) {
+        let p = position(x,y).withLength(length);
+        this.areWithinEpsilon(length, p.length());
+    }
+
+    testPositionPlus() {
+        let a = position('1em', '2em');
+        let b = position('2px','3px');
+        let env = {
+            em: 11,
+            px: 1
+        };
+        a.resolve(env);
+        this.areIdentical(11, a.x());
+        this.areIdentical(22, a.y());
+
+        let s = a.plus(b);
+        this.areIdentical(13, s.x());
+        this.areIdentical(25, s.y());
+    }
+
+    testPositionMinus() {
+        let a = position('1em', '2em');
+        let b = position('2px','3px');
+        let env = {
+            em: 11,
+            px: 1
+        };
+        a.resolve(env);
+        this.areIdentical(11, a.x());
+        this.areIdentical(22, a.y());
+
+        let s = a.minus(b);
+        this.areIdentical(9, s.x());
+        this.areIdentical(19, s.y());
     }
 
     testBoxFromNumbers() {

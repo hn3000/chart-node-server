@@ -168,7 +168,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
       }
       const labelR = labelRadius.value() + height;
       const labelPosition = centroidPosition.withLength(labelR);
-      const labelCenter = labelPosition.sum(labelDisp);
+      const labelCenter = labelPosition.plus(labelDisp);
  
       context.fillText(labelTxt, ...labelCenter.xy());
       context.restore();
