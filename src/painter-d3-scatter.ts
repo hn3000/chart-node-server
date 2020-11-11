@@ -152,7 +152,9 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     titleFontSize: titleFontSizeYAxis = titleFontSizeAxis,
   } = yAxisDimensions;
 
+  /*
   console.log({titleFontSizeAxis, titleFontSizeXAxis, titleFontSizeYAxis});
+  */
 
   const getXValue = valueGetter('xValue', meta);
   const getYValue = valueGetter('yValue', meta);
@@ -172,7 +174,7 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
       context.restore();
     }
     catch (ex) {
-      console.log(`exception in drawMarkerPx(${JSON.stringify({w,h,i})})`, ex);
+      console.warn(`exception in drawMarkerPx(${JSON.stringify({w,h,i})})`, ex);
     }
   };
 
