@@ -132,15 +132,16 @@ export function createLegendEntry(
   style: LegendStyle, color: string,
   text: string, textColor: string,
   entry: IData,
+  sampleHeight = 0.65
 ): IShape {
   const ctx = canvas.getContext('2d');
   ctx.textBaseline = 'alphabetic';
   let textMetrics = ctx.measureText(text);
   let ascent = textMetrics.actualBoundingBoxAscent;
   let marker: IShape;
-  let markerHeight = Math.ceil(0.65*ascent);
+  let markerHeight = Math.ceil(sampleHeight*ascent);
   let markerX = 0;
-  let markerY = Math.floor(0.35*5/8 * ascent);
+  let markerY = Math.floor((1-sampleHeight)*5/8 * ascent);
   
   if (style === LegendStyle.BOX) {
     marker = createBoxMarker(markerHeight, markerHeight, color, null, 0);
@@ -187,9 +188,10 @@ export function createLegend(
   width: number, 
   textColor: string,
   alignment: LegendAlignment = 'center',
-  position: LegendPosition = 'top'
+  position: LegendPosition = 'top',
+  sampleHeight = 0.65
 ): ILegendShape {
-  const legendEntries = data.map(x => createLegendEntry(canvas, style, x.c, x.l, textColor, x));
+  const legendEntries = data.map(x => createLegendEntry(canvas, style, x.c, x.l, textColor, x, sampleHeight));
   const lines: {shape: IShape, x: number}[][] = [];
   const lineWidths: number[] = [];
   const positions = [];

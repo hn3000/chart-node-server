@@ -38,7 +38,8 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     cornerRadius: 0,
     lineWidth: 0,
     startAngle: 0,
-    padAngle: 0
+    padAngle: 0,
+    legendSample: 0.65,
   };
 
 
@@ -51,9 +52,12 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     legendFontFamily = labelFontFamily,
     labelFont = `${labelFontSize.value()}px ${labelFontFamily}`,
     legendFont = `${legendFontSize.value()}px ${legendFontFamily}`,
+    legendAlignment = 'center',
     legendPosition = 'bottom',
     showDebug = false,
   } = req.body.chart;
+
+  console.log("legend Sample height", dimensions.legendSample.number);
 
   const env1: IUnitFactors = { ...env0, em: labelFontSize.value()};
 
@@ -64,8 +68,15 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
   let legendShape = nullShape();
   if (showLegend) {
     context.font = legendFont;
-    
-    legendShape = createLegend(canvas, data, LegendStyle.BOX, chartBox.width(), labelColor);
+    legendShape = createLegend(
+      canvas, data, 
+      LegendStyle.BOX, 
+      chartBox.width(), 
+      labelColor,
+      legendAlignment,
+      legendPosition,
+      dimensions.legendSample.number,
+    );
 
     let legendBox: IBox;
     if ('top' == legendPosition) {
