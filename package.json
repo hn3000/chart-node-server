@@ -1,7 +1,14 @@
 {
   "name": "chart-node-server",
   "version": "0.1.1",
-  "description": "",
+  "description": "simple chart server based on node, d3 and canvas",
+  "author": "Harald Niesche",
+  "license": "BSD",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hn3000/chart-node-server.git"
+  },
+  "bugs": "https://github.com/hn3000/chart-node-server/issues",
   "main": "index.js",
   "scripts": {
     "prestart": "tsc",
@@ -20,8 +27,6 @@
     "rest",
     "api"
   ],
-  "author": "Harald Niesche",
-  "license": "MIT",
   "dependencies": {
     "canvas": "^2.6.1",
     "@hn3000/canvas-5-polyfill": "^0.1.5-hn2",
