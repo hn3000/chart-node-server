@@ -12,6 +12,7 @@ export var UnitFactorsLength: IUnitFactors = {
   pt: 96 / 72,
   px: 1.0
 };
+
 export var UnitFactorsAngle: IUnitFactors = {
   "1": 1.0,
   rad: 1,

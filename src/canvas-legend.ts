@@ -8,6 +8,7 @@ export interface IShape {
   width: number;
   height: number;
   paint(canvas: c.Canvas): void;
+  paintBoxes?(_canvas: c.Canvas, color: string,  dashes?: number[]) : void;
 }
 
 export interface ILegendShape extends IShape {
@@ -21,7 +22,7 @@ export enum LegendStyle {
   SHAPE='shape'
 }
 
-export function nullShape() {
+export function nullShape() : IShape {
   return {
     width: 0, height: 0,
     paint(_canvas: c.Canvas) {}
@@ -179,16 +180,17 @@ export function createLegendEntry(
 }
 
 export type LegendAlignment = 'center' | 'left' | 'right';
-export type LegendPosition = 'top' | 'bottom';
+export type LegendPosition = 'top' | 'bottom' | 'right' | 'left';
 
 export function createLegend(
   canvas: c.Canvas, 
   data: IData[], 
   style: LegendStyle, 
-  width: number, 
+  chartBoxWidth: number, 
   textColor: string,
   alignment: LegendAlignment = 'center',
   position: LegendPosition = 'top',
+  size: number = null,
   sampleHeight = 0.65
 ): ILegendShape {
   const legendEntries = data.map(x => createLegendEntry(canvas, style, x.c, x.l, textColor, x, sampleHeight));
@@ -198,10 +200,21 @@ export function createLegend(
   let currentLine = 0;
   let currentWidth = 0;
 
+  let minHeight = 0;
+  let minWidth = 0;
+
+  if( size && (position == 'top' || position == 'bottom' )) {
+    minHeight = size
+  }
+
+  if (size && (position == 'left' || position == 'right' )) {
+    minWidth = size;
+  }
+
   for (let i = 0, n = legendEntries.length; i < n; ++i) {
     let thisOne = legendEntries[i];
     let spacingX = 0 === currentWidth ? 0 : Math.ceil(thisOne.height * 1.25);
-    if (0 !== currentWidth && currentWidth + thisOne.width + spacingX > width) {
+    if ((0 !== currentWidth && (alignment == "left" || alignment =="right" || position == "left" || position == "right" || currentWidth + thisOne.width + spacingX > chartBoxWidth))) {
       currentLine ++;
       currentWidth = 0;
       spacingX = 0;
@@ -217,6 +230,17 @@ export function createLegend(
   }
   let lineHeight = legendEntries.reduce((r,x) => Math.max(r,x.height), 0);  
   let currentTop = position === 'top' ? 0 : lineHeight;
+
+  let maxLineWidth = Math.max(...lineWidths);
+
+  let width = position == 'right' || position == 'left' ? Math.max(maxLineWidth, minWidth) : chartBoxWidth;
+  let justifying = ((position == 'bottom' || position == 'top') && (alignment == 'left' || alignment == 'right'));
+
+  let offsetX = 0;
+  if(justifying) {
+    offsetX += (chartBoxWidth - maxLineWidth) / 2;
+  }
+
   for (let li = 0, ln = lines.length; li < ln; ++li) {
     let startX: number;
     switch (alignment) {
@@ -225,21 +249,23 @@ export function createLegend(
         startX = (width - lineWidths[li]) / 2;
         break;
       case 'left':
-        startX = 0;
+        startX = offsetX;
         break;
       case 'right':
-        startX = width - lineWidths[li];
+        startX = width - lineWidths[li] - offsetX;
         break;
-      }
+    }
+
     for (let ii = 0, ni = lines[li].length; ii < ni; ++ii) {
       const thisOne = lines[li][ii];
       positions.push({x: startX + thisOne.x, y: currentTop });
     }
     currentTop += Math.ceil(lineHeight*2);
   }
+
   return ({
-    height: currentTop - (position === 'top' ? 0 : lineHeight),
-    width,
+    height: Math.max(minHeight, currentTop - (position === 'top' ? 0 : lineHeight)),
+    width: Math.max(minWidth, width),
     lineHeight,
     paint(canvas: c.Canvas) {
       const context = canvas.getContext('2d');
@@ -249,7 +275,19 @@ export function createLegend(
         legendEntries[i].paint(canvas);
         context.restore();
       }
+    }, 
+    paintBoxes(canvas: c.Canvas, color, dashes = []) {
+      const context = canvas.getContext('2d');
+      for (let i = 0, n = legendEntries.length; i < n; ++i) {
+        const entry = legendEntries[i];
+        context.save();
+        context.translate(positions[i].x, positions[i].y);
+        context.strokeStyle = color;
+        context.setLineDash(dashes);
+        context.strokeRect(0, 0, entry.width, entry.height);
+        context.restore();
+      }
     }
-  });
+  } as any);
 
 }

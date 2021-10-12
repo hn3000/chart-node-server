@@ -2,7 +2,7 @@ import * as d3 from 'd3';
 import { IPieBody, IChartBody, IData, IChartSpec } from './api';
 import { PieArcDatum } from 'd3';
 import * as c from 'canvas';
-import { LegendStyle, createLegend, nullShape } from './canvas-legend';
+import { LegendStyle, createLegend, nullShape, ILegendShape, IShape } from './canvas-legend';
 import { IUnitFactors, dimensionProxy } from './dimension';
 import { position, box, IBox, IPosition } from './position';
 import { valueGetter } from './util';
@@ -40,11 +40,12 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     startAngle: 0,
     padAngle: 0,
     legendSample: 0.65,
+    legendSize: "0"
   };
 
-
   const dimensions = dimensionProxy(req.body.chart, defaultDimensions, () => env0);
-  const { labelFontSize, legendFontSize, padX, padY } = dimensions;
+
+  const { labelFontSize, legendFontSize, padX, padY, legendSize } = dimensions;
   const {
     labelColor = '#000',
     showLegend = true,
@@ -62,10 +63,11 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
   const env1: IUnitFactors = { ...env0, em: labelFontSize.value()};
 
   const chartBox = box(0, 0, canvas.width, canvas.height).insideBox(padX, padY).resolve(env1);
+  
   //console.log(`chart box ${chartBox.left()} ${chartBox.top()} ${chartBox.right()} ${chartBox.bottom()}`);
   let pieBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(chartBox.width())).resolve(env1);
   //console.log(`pie box ${pieBox.left()} ${pieBox.top()} ${pieBox.right()} ${pieBox.bottom()}`);
-  let legendShape = nullShape();
+  let legendShape : IShape = nullShape();
   if (showLegend) {
     context.font = legendFont;
     legendShape = createLegend(
@@ -75,24 +77,43 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
       labelColor,
       legendAlignment,
       legendPosition,
+      legendSize.resolve(env1).value(),
       dimensions.legendSample.number,
     );
 
     let legendBox: IBox;
-    if ('top' == legendPosition) {
-      legendBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(legendShape.height)).resolve(env1);
-      pieBox = box(legendBox.bottomLeft(), chartBox.bottomRight()).resolve(env1);
-    } else {
-      let pieHeight = Math.min(chartBox.width(), chartBox.height() - legendShape.height);
-      pieBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(pieHeight)).resolve(env1);
-      legendBox = box(pieBox.bottomLeft(), chartBox.bottomRight()).resolve(env1);
+
+    switch(legendPosition) {
+      case 'top':
+        pieBox = box(legendBox.bottomLeft(), chartBox.bottomRight()).resolve(env1);
+        legendBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(legendShape.height)).resolve(env1);
+        break;
+      case 'right':
+        legendBox = box(chartBox.topRight().leftBy(legendShape.width), chartBox.bottomRight()).resolve(env1);
+        pieBox = box(chartBox.topLeft(),chartBox.bottomRight().leftBy(legendShape.width)).resolve(env1);
+        break;
+      case 'left':
+        legendBox = box(chartBox.topLeft(), chartBox.bottomLeft().rightBy(legendShape.width)).resolve(env1);
+        pieBox = box(chartBox.topLeft().rightBy(legendShape.width),chartBox.bottomRight()).resolve(env1);
+        break;
+      case 'bottom':
+        let pieHeight = Math.min(chartBox.width(), chartBox.height() - legendShape.height);
+        pieBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(pieHeight)).resolve(env1);
+        legendBox = box(pieBox.bottomLeft(), chartBox.bottomRight()).resolve(env1);
     }
 
     context.save();
     context.translate(legendBox.left(), legendBox.top());
+
     legendShape.paint(canvas);
+
     if (showDebug) {
-      context.strokeStyle = '#fff';
+
+      if(legendShape.paintBoxes) {
+        legendShape.paintBoxes(canvas, '#FF0000');
+      }
+
+      context.strokeStyle = '#00ff00';
       context.strokeRect(0,0, legendBox.width(), legendBox.height());
     }
     context.restore();
@@ -218,9 +239,6 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
 
         context.stroke();
       }
-
-      /*
-       */
     }
   });
 
@@ -233,20 +251,20 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     context.stroke();
   }
 
-/*
-  if (showDebug) {
-    let codeBox = box(chartBox.topRight().leftBy(150), chartBox.bottomRight());
-    context.resetTransform();
-    context.translate(codeBox.left(), codeBox.top());
-    context.fillStyle = "#ddd";
-    context.fillRect(0, 0, codeBox.width(), codeBox.height());
-    context.font = '11px Helvetica,"sans-serif"';
-    context.fillStyle = "#000";
 
-    const text = JSON.stringify(data, null, 2);
-    codeBox = codeBox.insideBox(10);
-    context.fillText(text, codeBox.left(), codeBox.top(), codeBox.width());
-  }
-*/
+  // if (showDebug) {
+  //   let codeBox = box(chartBox.topRight().leftBy(150), chartBox.bottomRight());
+  //   context.resetTransform();
+  //   context.translate(codeBox.left(), codeBox.top());
+  //   context.fillStyle = "#ddd";
+  //   context.fillRect(0, 0, codeBox.width(), codeBox.height());
+  //   context.font = '11px Helvetica,"sans-serif"';
+  //   context.fillStyle = "#000";
+
+  //   const text = JSON.stringify(data, null, 2);
+  //   codeBox = codeBox.insideBox(10);
+  //   context.fillText(text, codeBox.left(), codeBox.top(), codeBox.width());
+  // }
+
 }
 
