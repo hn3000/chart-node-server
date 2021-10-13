@@ -141,6 +141,6 @@ export interface IPieBody extends IChartBody {
   showLegend: string|boolean;
 
   legendPosition: 'top' | 'bottom' | 'left' | 'right';
-  legendAlingmnent: 'left' |'center'|'right';
-  legentSize: string|number;
+  legendAlignment: 'left' |'center'|'right';
+  legendSize: string|number;
 }
