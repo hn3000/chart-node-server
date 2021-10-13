@@ -40,10 +40,12 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     startAngle: 0,
     padAngle: 0,
     legendSample: 0.65,
-    legendSize: "0"
+    legendSize: "0",
+    labelRadius: undefined
   };
 
-  const dimensions = dimensionProxy(req.body.chart, defaultDimensions, () => env0);
+
+  const dimensions = dimensionProxy(body.chart, defaultDimensions, () => env0);
 
   const { labelFontSize, legendFontSize, padX, padY, legendSize } = dimensions;
   const {
@@ -57,7 +59,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     legendVerticalAlignment = 'middle',
     legendPosition = 'bottom',
     showDebug = false,
-  } = req.body.chart;
+  } = body.chart;
 
   console.log("legend Sample height", dimensions.legendSample.number);
 
@@ -136,7 +138,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     env1.vmin = Math.min(env1.vw, env1.vh);
   }
 
-  const pieDimensions = dimensionProxy(req.body.chart, defaultDimensions, () => env1);
+  const pieDimensions = dimensionProxy(body.chart, defaultDimensions, () => env1);
 
   const {
     innerRadius,
@@ -153,7 +155,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     showCenter = false,
     showLabels = true,
     showLabelDebug = false,
-  } = req.body.chart;
+  } = body.chart;
 
   let makePie = d3
     .pie<IData>()
