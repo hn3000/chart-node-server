@@ -54,6 +54,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     labelFont = `${labelFontSize.value()}px ${labelFontFamily}`,
     legendFont = `${legendFontSize.value()}px ${legendFontFamily}`,
     legendAlignment = 'center',
+    legendVerticalAlignment = 'middle',
     legendPosition = 'bottom',
     showDebug = false,
   } = req.body.chart;
@@ -83,17 +84,29 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
 
     let legendBox: IBox;
 
+
+    let verticalOffset = (chartBox.height() - legendShape.height) / 2; 
+
+    switch(legendVerticalAlignment) {
+      case 'top':
+        verticalOffset =  0;
+        break;
+      case 'bottom':
+        verticalOffset =  chartBox.height() - legendShape.height;
+        break;
+    }
+
     switch(legendPosition) {
       case 'top':
         pieBox = box(legendBox.bottomLeft(), chartBox.bottomRight()).resolve(env1);
         legendBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(legendShape.height)).resolve(env1);
         break;
       case 'right':
-        legendBox = box(chartBox.topRight().leftBy(legendShape.width), chartBox.bottomRight()).resolve(env1);
+        legendBox = box(chartBox.topRight().leftBy(legendShape.width).belowBy(verticalOffset), chartBox.bottomRight()).resolve(env1);
         pieBox = box(chartBox.topLeft(),chartBox.bottomRight().leftBy(legendShape.width)).resolve(env1);
         break;
-      case 'left':
-        legendBox = box(chartBox.topLeft(), chartBox.bottomLeft().rightBy(legendShape.width)).resolve(env1);
+      case 'left': 
+        legendBox = box(chartBox.topLeft().belowBy(verticalOffset), chartBox.bottomLeft().rightBy(legendShape.width)).resolve(env1);
         pieBox = box(chartBox.topLeft().rightBy(legendShape.width),chartBox.bottomRight()).resolve(env1);
         break;
       case 'bottom':
