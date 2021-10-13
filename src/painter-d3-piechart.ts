@@ -251,20 +251,20 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     context.stroke();
   }
 
+/*
+  if (showDebug) {
+    let codeBox = box(chartBox.topRight().leftBy(150), chartBox.bottomRight());
+    context.resetTransform();
+    context.translate(codeBox.left(), codeBox.top());
+    context.fillStyle = "#ddd";
+    context.fillRect(0, 0, codeBox.width(), codeBox.height());
+    context.font = '11px Helvetica,"sans-serif"';
+    context.fillStyle = "#000";
 
-  // if (showDebug) {
-  //   let codeBox = box(chartBox.topRight().leftBy(150), chartBox.bottomRight());
-  //   context.resetTransform();
-  //   context.translate(codeBox.left(), codeBox.top());
-  //   context.fillStyle = "#ddd";
-  //   context.fillRect(0, 0, codeBox.width(), codeBox.height());
-  //   context.font = '11px Helvetica,"sans-serif"';
-  //   context.fillStyle = "#000";
-
-  //   const text = JSON.stringify(data, null, 2);
-  //   codeBox = codeBox.insideBox(10);
-  //   context.fillText(text, codeBox.left(), codeBox.top(), codeBox.width());
-  // }
-
+    const text = JSON.stringify(data, null, 2);
+    codeBox = codeBox.insideBox(10);
+    context.fillText(text, codeBox.left(), codeBox.top(), codeBox.width());
+  }
+*/
 }
 
