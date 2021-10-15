@@ -139,8 +139,19 @@ export interface IData {
 export interface IPieBody extends IChartBody {
   data: any[];
   showLegend: string|boolean;
-
-  legendPosition: 'top' | 'bottom' | 'left' | 'right';
-  legendAlignment: 'left' |'center'|'right';
-  legendSize: string|number;
+  chart: IChartSpec & {
+    labelColor?: string;
+    labelFont?: string;
+    legendAlignment?: 'left' |'center'|'right';
+    legendFont?: string;
+    legendFontFamily?: string;
+    legendPosition?: 'top' | 'bottom' | 'left' | 'right';
+    legendSize?: string|number;
+    legendVerticalAlignment?: 'top' | 'middle' | 'bottom';
+    showDebug?: boolean;
+    showLegend?: boolean;
+    showCenter?: boolean,
+    showLabels?: boolean,
+    showLabelDebug?: boolean,
+  }
 }

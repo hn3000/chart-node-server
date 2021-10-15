@@ -40,10 +40,12 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     startAngle: 0,
     padAngle: 0,
     legendSample: 0.65,
-    legendSize: "0"
+    legendSize: "0",
+    labelRadius: undefined
   };
 
-  const dimensions = dimensionProxy(req.body.chart, defaultDimensions, () => env0);
+
+  const dimensions = dimensionProxy(body.chart, defaultDimensions, () => env0);
 
   const { labelFontSize, legendFontSize, padX, padY, legendSize } = dimensions;
   const {
@@ -54,9 +56,10 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     labelFont = `${labelFontSize.value()}px ${labelFontFamily}`,
     legendFont = `${legendFontSize.value()}px ${legendFontFamily}`,
     legendAlignment = 'center',
+    legendVerticalAlignment = 'middle',
     legendPosition = 'bottom',
     showDebug = false,
-  } = req.body.chart;
+  } = body.chart;
 
   console.log("legend Sample height", dimensions.legendSample.number);
 
@@ -83,17 +86,29 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
 
     let legendBox: IBox;
 
+
+    let verticalOffset = (chartBox.height() - legendShape.height) / 2; 
+
+    switch(legendVerticalAlignment) {
+      case 'top':
+        verticalOffset =  0;
+        break;
+      case 'bottom':
+        verticalOffset =  chartBox.height() - legendShape.height;
+        break;
+    }
+
     switch(legendPosition) {
       case 'top':
         pieBox = box(legendBox.bottomLeft(), chartBox.bottomRight()).resolve(env1);
         legendBox = box(chartBox.topLeft(), chartBox.topRight().belowBy(legendShape.height)).resolve(env1);
         break;
       case 'right':
-        legendBox = box(chartBox.topRight().leftBy(legendShape.width), chartBox.bottomRight()).resolve(env1);
+        legendBox = box(chartBox.topRight().leftBy(legendShape.width).belowBy(verticalOffset), chartBox.bottomRight()).resolve(env1);
         pieBox = box(chartBox.topLeft(),chartBox.bottomRight().leftBy(legendShape.width)).resolve(env1);
         break;
-      case 'left':
-        legendBox = box(chartBox.topLeft(), chartBox.bottomLeft().rightBy(legendShape.width)).resolve(env1);
+      case 'left': 
+        legendBox = box(chartBox.topLeft().belowBy(verticalOffset), chartBox.bottomLeft().rightBy(legendShape.width)).resolve(env1);
         pieBox = box(chartBox.topLeft().rightBy(legendShape.width),chartBox.bottomRight()).resolve(env1);
         break;
       case 'bottom':
@@ -123,7 +138,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     env1.vmin = Math.min(env1.vw, env1.vh);
   }
 
-  const pieDimensions = dimensionProxy(req.body.chart, defaultDimensions, () => env1);
+  const pieDimensions = dimensionProxy(body.chart, defaultDimensions, () => env1);
 
   const {
     innerRadius,
@@ -140,7 +155,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     showCenter = false,
     showLabels = true,
     showLabelDebug = false,
-  } = req.body.chart;
+  } = body.chart;
 
   let makePie = d3
     .pie<IData>()
