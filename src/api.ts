@@ -148,6 +148,7 @@ export interface IPieBody extends IChartBody {
     legendPosition?: 'top' | 'bottom' | 'left' | 'right';
     legendSize?: string|number;
     legendVerticalAlignment?: 'top' | 'middle' | 'bottom';
+    legendItemPerRow?: boolean;
     showDebug?: boolean;
     showLegend?: boolean;
     showCenter?: boolean,
@@ -155,3 +156,19 @@ export interface IPieBody extends IChartBody {
     showLabelDebug?: boolean,
   }
 }
+
+export interface IScatterChartBody extends IChartBody {
+  chart: IChartSpec & {     
+    shapes?: string[]; // path2d shape, ~32x32 px^2, centered on 16,16
+
+    extra?: number;
+    shapeSize?: string|number;
+
+    showLegend: boolean;
+    legendPosition: 'top' | 'bottom';
+    legendAlignment: 'left' | 'right' | 'center';
+    legendFontSize: string|number;
+    legendItemPerRow?: boolean;
+  }
+}
+

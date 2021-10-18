@@ -58,6 +58,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     legendAlignment = 'center',
     legendVerticalAlignment = 'middle',
     legendPosition = 'bottom',
+    legendItemPerRow = false,
     showDebug = false,
   } = body.chart;
 
@@ -80,6 +81,7 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
       labelColor,
       legendAlignment,
       legendPosition,
+      legendItemPerRow,
       legendSize.resolve(env1).value(),
       dimensions.legendSample.number,
     );

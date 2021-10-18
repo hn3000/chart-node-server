@@ -190,6 +190,7 @@ export function createLegend(
   textColor: string,
   alignment: LegendAlignment = 'center',
   position: LegendPosition = 'top',
+  oneItemPerRow: boolean = false,
   size: number = null,
   sampleHeight = 0.65
 ): ILegendShape {
@@ -214,7 +215,7 @@ export function createLegend(
   for (let i = 0, n = legendEntries.length; i < n; ++i) {
     let thisOne = legendEntries[i];
     let spacingX = 0 === currentWidth ? 0 : Math.ceil(thisOne.height * 1.25);
-    if ((0 !== currentWidth && (alignment == "left" || alignment =="right" || position == "left" || position == "right" || currentWidth + thisOne.width + spacingX > chartBoxWidth))) {
+    if ((0 !== currentWidth && (oneItemPerRow || position == "left" || position == "right" || currentWidth + thisOne.width + spacingX > chartBoxWidth))) {
       currentLine ++;
       currentWidth = 0;
       spacingX = 0;

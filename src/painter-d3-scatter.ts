@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { IChartBody, IChartSpec } from './api';
+import { IChartBody, IChartSpec, IScatterChartBody } from './api';
 import * as c from 'canvas';
 import { LegendStyle, createLegend, nullShape, createTextShape, IShape } from './canvas-legend';
 import { IUnitFactors, dimension, dimensionProxy } from './dimension';
@@ -7,21 +7,6 @@ import { box, IBox } from './position';
 import { valueGetter } from './util';
 
 require('@hn3000/canvas-5-polyfill');
-
-export interface IScatterChartBody extends IChartBody {
-  chart: IChartSpec & {     
-    shapes?: string[]; // path2d shape, ~32x32 px^2, centered on 16,16
-
-    extra?: number;
-    shapeSize?: string|number;
-
-    showLegend: boolean;
-    legendPosition: 'top' | 'bottom';
-    legendAlignment: 'left' | 'right' | 'center';
-    legendFontSize: string|number;
-
-  }
-}
 
 export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
@@ -91,7 +76,8 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     extra = 0.05,
     legendPosition = 'bottom',
     legendAlignment = 'left',
-    showLegend
+    showLegend,
+    legendItemPerRow = false
   } = { axis: {}, ...chart };
 
   const axisDimensions = dimensionProxy(
@@ -301,7 +287,7 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
   context.save();
   context.font = legendFont;
   const legend = showLegend
-               ? createLegend(canvas, data, LegendStyle.SHAPE, legendWidth, textColor, legendAlignment, legendPosition)
+               ? createLegend(canvas, data, LegendStyle.SHAPE, legendWidth, textColor, legendAlignment, legendPosition, legendItemPerRow)
                : { ...nullShape(), lineHeight: 0 };
 
   context.restore();
