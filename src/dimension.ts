@@ -292,7 +292,7 @@ export function dimensionProxy<X, D, K extends keyof (X & D)>(
       get: () => {
         if (undefined === cache[k]) {
           const envK = ufm(k);
-          const val = undefined !== obj[k] ? obj[k] : defaults[k];
+          const val = undefined !== obj[k] && null != obj[k] ? obj[k] : defaults[k];
           const valType = typeof val;
           if (
             envK && (
