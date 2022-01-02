@@ -17,6 +17,7 @@
     "tsc": "tsc",
     "tsc:w": "tsc -w",
     "docker": "docker build . -t node-chart-server",
+    "deploy": "docker-compose up -d --build && docker-compose -f docker-compose-nowm.yml up -d --build",
     "pretest": "tsc -p tsconfig.test.json",
     "test": "node out-test/test/all-tests",
     "cover": "nyc npm test"
