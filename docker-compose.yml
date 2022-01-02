@@ -9,3 +9,4 @@ services:
     environment:
       WATERMARK: "true"
       PORT: 3456
+    restart: unless-stopped

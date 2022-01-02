@@ -10,3 +10,4 @@ services:
     environment:
       WATERMARK: "false"
       PORT: 3457
+    restart: unless-stopped
