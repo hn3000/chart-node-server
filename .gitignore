@@ -3,3 +3,4 @@ out
 out-test
 .nyc_output
 coverage
+tmp
