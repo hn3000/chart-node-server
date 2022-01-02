@@ -11,7 +11,7 @@ RUN apk add --no-cache \
 
 FROM base as builder
 
-RUN apk --update add --virtual build-dependencies python make gcc g++  \
+RUN apk --update add --virtual build-dependencies python3 make gcc g++  \
  && npm install -g node-gyp
 
 RUN apk add --no-cache \
