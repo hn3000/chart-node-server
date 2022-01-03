@@ -13,7 +13,7 @@ function runServer(argv) {
   console.log("starting express");
   let app = express();
 
-  app.use(express.json());
+  app.use(express.json({limit: 1e6}));
 
   app.get("/", function(req, res) {
     res.sendFile("index.html", { root: path.resolve(__dirname, '../assets') });
