@@ -2,23 +2,14 @@ FROM node:14-alpine as base
 
 RUN npm config set unsafe-perm true
 
-RUN apk add --no-cache \
-    cairo \
-    jpeg \
-    pango \
-    giflib
-
+RUN apk add --no-cache cairo jpeg pango giflib
 
 FROM base as builder
 
-RUN apk --update add --virtual build-dependencies python3 make gcc g++  \
+RUN apk --update add --virtual build-dependencies python3 make gcc g++ \
  && npm install -g node-gyp
 
-RUN apk add --no-cache \
-    cairo-dev \
-    jpeg-dev \
-    pango-dev \
-    giflib-dev
+RUN apk add --no-cache cairo-dev jpeg-dev pango-dev giflib-dev
 
 WORKDIR /chart-server
 
