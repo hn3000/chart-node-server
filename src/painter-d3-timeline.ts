@@ -9,8 +9,6 @@ import { valueGetter } from './util';
 export interface ITimeLineBody extends IChartBody {
   chart: IChartSpec & { 
     seriesLabel: string;
-    timeTicks?: number;
-    valueTicks?: number;
  }
 }
 
@@ -58,13 +56,11 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const { 
     labelFontFamily = 'Helvetica,"sans-serif"',
     months = 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec'.split(','),
-    timeTicks = 5,
     labelPrecision = 2,
     labelStyle = 'decimal',
     labelCurrency = 'EUR',
     locale='de-DE',
     seriesLabel = '',
-    valueTicks = 3
   } = chart;
 
   const {
@@ -78,6 +74,9 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     labelCurrency: valueLabelCurrency = labelCurrency,
   } = chart.valueAxis || { };
 
+  const valueTicks = chart.valueAxis?.tickCount || 3;
+  const timeTicks = chart.mainAxis?.tickCount || 5;
+  
   const dateLabel = (d: Date) => {
     return `${months[d.getMonth()]} ${d.getFullYear() % 100}`;
   };
