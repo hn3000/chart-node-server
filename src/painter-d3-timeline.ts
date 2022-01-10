@@ -7,7 +7,9 @@ import { box, IBox } from './position';
 import { valueGetter } from './util';
  
 export interface ITimeLineBody extends IChartBody {
-  chart: IChartSpec & { seriesLabel: string; }
+  chart: IChartSpec & { 
+    seriesLabel: string;
+ }
 }
 
 export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
@@ -49,7 +51,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     padY = padX,
     labelFontSize,
     lineWidth,
-    tickLength
+    tickLength,
   } = dimensions;
   const { 
     labelFontFamily = 'Helvetica,"sans-serif"',
@@ -58,7 +60,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     labelStyle = 'decimal',
     labelCurrency = 'EUR',
     locale='de-DE',
-    seriesLabel = ''
+    seriesLabel = '',
   } = chart;
 
   const {
@@ -72,6 +74,9 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     labelCurrency: valueLabelCurrency = labelCurrency,
   } = chart.valueAxis || { };
 
+  const valueTicks = chart.valueAxis?.tickCount || 3;
+  const timeTicks = chart.mainAxis?.tickCount || 5;
+  
   const dateLabel = (d: Date) => {
     return `${months[d.getMonth()]} ${d.getFullYear() % 100}`;
   };
@@ -82,8 +87,8 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const valueScaleU = d3.scaleLinear().domain([minVal, maxVal]);
   const timeScaleU = d3.scaleTime().domain([minTime, maxTime])
 
-  const timeScaleTicks = timeScaleU.ticks(5);
-  const valueScaleTicks = valueScaleU.ticks(3);
+  const timeScaleTicks = timeScaleU.ticks(timeTicks);
+  const valueScaleTicks = valueScaleU.ticks(valueTicks);
 
   // set up label font
 
