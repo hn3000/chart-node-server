@@ -1,3 +1,5 @@
+import { CustomTimeInterval } from "./custom-time-intervals";
+
 export interface IChartMeta {
   [key:string]: string;
 }
@@ -69,6 +71,7 @@ export interface IChartSpec {
     titleFontSize?: string|number;
     titleFontWeight?: string|number;
     titleFontFamily?: string;
+    tickInterval?: CustomTimeInterval;
   };
   valueAxis?: {
     position: 'left';
