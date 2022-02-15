@@ -3,6 +3,7 @@ import { IChartBody, IChartSpec } from './api';
 import * as c from 'canvas';
 import { LegendStyle, createLegend, nullShape } from './canvas-legend';
 import { IUnitFactors, dimension, dimensionProxy } from './dimension';
+import * as TimeIntervals from './custom-time-intervals';
 import { box, IBox } from './position';
 import { valueGetter } from './util';
  
@@ -77,6 +78,8 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const valueTicks = chart.valueAxis?.tickCount || 3;
   const timeTicks = chart.mainAxis?.tickCount || 5;
   
+  const tickInterval = chart.mainAxis?.tickInterval;
+
   const dateLabel = (d: Date) => {
     return `${months[d.getMonth()]} ${d.getFullYear() % 100}`;
   };
@@ -87,7 +90,13 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const valueScaleU = d3.scaleLinear().domain([minVal, maxVal]);
   const timeScaleU = d3.scaleTime().domain([minTime, maxTime])
 
-  const timeScaleTicks = timeScaleU.ticks(timeTicks);
+  let timeScaleTicks: Array<Date>;
+  if (tickInterval) {
+    timeScaleTicks = timeScaleU.ticks(TimeIntervals.Intervals[tickInterval]);
+  } else {
+    timeScaleTicks = timeScaleU.ticks(timeTicks);
+  }
+
   const valueScaleTicks = valueScaleU.ticks(valueTicks);
 
   // set up label font
