@@ -38,7 +38,6 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     r.minTime = Math.min(t, r.minTime);
     r.maxTime = Math.max(t, r.maxTime);
     const v : number[] = seriesMappers.map(mapper => mapper(x)); 
-    console.log(v);
     r.minVal = Math.min(...[...v, r.minVal]);
     r.maxVal = Math.max(...[...v, r.maxVal]);
 
@@ -139,6 +138,10 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   let yLabelBox: IBox;
   let plotBox: IBox;
   let legendPosition: string;
+
+  let vhRange : number[];
+
+
   if (timeAxisPosition === 'top') {
     let cornerPos = chartBox.topLeft().rightBy(valueAxisWidth).belowBy(timeAxisHeight);
     xLabelBox = box(cornerPos, chartBox.topRight()).resolve(env0);
@@ -153,7 +156,20 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     legendPosition = 'top';
   }
 
-  const vhRange = [ plotBox.bottom(), plotBox.top() ];
+  const { textColor = '#000' } = chart.axis || {};
+  const legendWidth = Math.abs(plotBox.width());
+  const legendData = seriesLabel.map((label, idx) => ({ l: label, c: stroke[idx], v: null, vl: null }));
+  const legend = req.body.chart.showLegend && seriesLabel 
+               ? createLegend(canvas, legendData, LegendStyle.LINE, legendWidth, textColor)
+               : nullShape();
+
+  if (legendPosition === 'bottom') {
+    vhRange = [ plotBox.bottom() - legend?.height ?? 0  , plotBox.top() ];
+  } else {
+    vhRange = [ plotBox.bottom() , plotBox.top() + legend?.height ?? 0  ];
+  }
+
+  
   const vwRange = [ plotBox.left(), plotBox.right() ];
 
   const valueScale = valueScaleU.range(vhRange);
@@ -183,6 +199,8 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   .y(d => d[1]);
 
   const timeAxisTicks = timeScaleTicks.map(timeScale);
+
+
 
   context.beginPath();
   const axisTickDir = timeAxisPosition === 'top' ? -1 : 1;
@@ -236,13 +254,6 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
 
     context.fillText(label, yLabelBox.right()-2*tickLength.value(), y);
   });
-
-  const { textColor = '#000' } = chart.axis || {};
-  const legendData = seriesLabel.map((label, idx) => ({ l: label, c: stroke[idx], v: null, vl: null }));
-  const legendWidth = Math.abs(plotBox.width());
-  const legend = req.body.chart.showLegend && seriesLabel 
-               ? createLegend(canvas, legendData, LegendStyle.LINE, legendWidth, textColor)
-               : nullShape();
 
   if (legend.height) {
     if (legendPosition === 'top') {
