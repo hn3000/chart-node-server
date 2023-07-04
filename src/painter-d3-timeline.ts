@@ -38,7 +38,6 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     r.minTime = Math.min(t, r.minTime);
     r.maxTime = Math.max(t, r.maxTime);
     const v : number[] = seriesMappers.map(mapper => mapper(x)); 
-    console.log(v);
     r.minVal = Math.min(...[...v, r.minVal]);
     r.maxVal = Math.max(...[...v, r.maxVal]);
 
