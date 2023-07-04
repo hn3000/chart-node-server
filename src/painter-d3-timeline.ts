@@ -138,10 +138,6 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   let yLabelBox: IBox;
   let plotBox: IBox;
   let legendPosition: string;
-
-  let vhRange : number[];
-
-
   if (timeAxisPosition === 'top') {
     let cornerPos = chartBox.topLeft().rightBy(valueAxisWidth).belowBy(timeAxisHeight);
     xLabelBox = box(cornerPos, chartBox.topRight()).resolve(env0);
@@ -163,13 +159,13 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
                ? createLegend(canvas, legendData, LegendStyle.LINE, legendWidth, textColor)
                : nullShape();
 
+  let vhRange : number[];
   if (legendPosition === 'bottom') {
     vhRange = [ plotBox.bottom() - legend?.height ?? 0  , plotBox.top() ];
   } else {
     vhRange = [ plotBox.bottom() , plotBox.top() + legend?.height ?? 0  ];
   }
 
-  
   const vwRange = [ plotBox.left(), plotBox.right() ];
 
   const valueScale = valueScaleU.range(vhRange);
@@ -199,8 +195,6 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   .y(d => d[1]);
 
   const timeAxisTicks = timeScaleTicks.map(timeScale);
-
-
 
   context.beginPath();
   const axisTickDir = timeAxisPosition === 'top' ? -1 : 1;
