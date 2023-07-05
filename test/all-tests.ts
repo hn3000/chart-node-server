@@ -7,6 +7,7 @@ import {
   TestAsync,
   TestDescription
 } from "tsunit.external/tsUnitAsync";
+import { D3TimeScaleTest } from './d3-time-scale-test';
 
 function parmNum(t:TestDescription) {
   return (null != t.parameterSetNumber) ? `[${t.parameterSetNumber}]` : '';
@@ -15,6 +16,7 @@ function parmNum(t:TestDescription) {
 export function runTests() {
   "use strict";
   let test = new TestAsync();
+  test.addTestClass(new D3TimeScaleTest(), 'D3TimeScaleTest');
   test.addTestClass(new DimensionTest(), 'DimensionTest');
   test.addTestClass(new PositionTest(), 'PositionTest');
   test.addTestClass(new ParseBooleanTest(), 'ParseBooleanTest');
