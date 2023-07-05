@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { IChartBody, IChartSpec } from './api';
+import { IChartBody, IChartMeta, IChartSpec } from './api';
 import * as c from 'canvas';
 import { LegendStyle, createLegend, nullShape } from './canvas-legend';
 import { IUnitFactors, dimension, dimensionProxy } from './dimension';
@@ -9,7 +9,11 @@ import { valueGetter } from './util';
  
 export interface ITimeLineBody extends IChartBody {
   chart: IChartSpec & { 
-    seriesLabel: string;
+    seriesLabel: string | string[];
+    stroke: string | string[];
+ },
+ meta: IChartMeta & {
+  value: string | string[]
  }
 }
 
@@ -20,7 +24,12 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const meta = body.meta;
   const chart = body.chart;
   const getTimestamp = valueGetter('timestamp', meta);
-  const getValue = valueGetter("value", meta);
+
+  const value = Array.isArray(meta.value) ? meta.value  : [ meta.value ];
+  const stroke = Array.isArray(chart.stroke) ? chart.stroke : [chart.stroke];
+
+  const seriesLabel = Array.isArray(chart.seriesLabel) ? chart.seriesLabel : [ chart.seriesLabel];
+  const seriesMappers = value.map(v => valueGetter(v, meta));
 
   const data = req.body.data;
 
@@ -28,9 +37,10 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     const t = getTimestamp(x);
     r.minTime = Math.min(t, r.minTime);
     r.maxTime = Math.max(t, r.maxTime);
-    const v = getValue(x);
-    r.minVal = Math.min(v, r.minVal);
-    r.maxVal = Math.max(v, r.maxVal);
+    const v : number[] = seriesMappers.map(mapper => mapper(x)); 
+    r.minVal = Math.min(...[...v, r.minVal]);
+    r.maxVal = Math.max(...[...v, r.maxVal]);
+
     return r;
   }, { 
     minTime: Number.MAX_VALUE, 
@@ -61,7 +71,6 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     labelStyle = 'decimal',
     labelCurrency = 'EUR',
     locale='de-DE',
-    seriesLabel = '',
   } = chart;
 
   const {
@@ -143,33 +152,50 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     legendPosition = 'top';
   }
 
-  const vhRange = [ plotBox.bottom(), plotBox.top() ];
+  const { textColor = '#000' } = chart.axis || {};
+  const legendWidth = Math.abs(plotBox.width());
+  const legendData = seriesLabel.map((label, idx) => ({ l: label, c: stroke[idx], v: null, vl: null }));
+  const legend = req.body.chart.showLegend && seriesLabel 
+               ? createLegend(canvas, legendData, LegendStyle.LINE, legendWidth, textColor)
+               : nullShape();
+
+  let vhRange : number[];
+  if (legendPosition === 'bottom') {
+    vhRange = [ plotBox.bottom() - legend?.height ?? 0  , plotBox.top() ];
+  } else {
+    vhRange = [ plotBox.bottom() , plotBox.top() + legend?.height ?? 0  ];
+  }
+
   const vwRange = [ plotBox.left(), plotBox.right() ];
 
   const valueScale = valueScaleU.range(vhRange);
   const timeScale = timeScaleU.range(vwRange);
+  
+  for(let i = 0; i< seriesMappers.length; i++) {
+    const linePainter = d3.line().context(context);
 
-  const linePainter = d3.line().context(context);
-  const line = linePainter
-                 .curve(d3.curveLinear)
-                 .x(d => timeScale(getTimestamp(d)))
-                 .y(d => valueScale(getValue(d)));
+    const getValue = seriesMappers[i];
+    const line = linePainter
+                  .curve(d3.curveLinear)
+                  .x(d => timeScale(getTimestamp(d)))
+                  .y(d => valueScale(getValue(d)));
+
+    context.beginPath();
+    context.lineWidth = lineWidth.value();
+    context.lineCap = chart.lineCap || 'round';
+    context.lineJoin = chart.lineJoin || 'round';
+    context.miterLimit = null != chart.miterLimit ? chart.miterLimit : 4;
+    context.strokeStyle = stroke[i];
+    line(data);
+    context.stroke();
+  }
 
   const axisLine = d3.line().context(context)
-                  .x(d => d[0])
-                  .y(d => d[1]);
-
-  context.beginPath();
-  context.lineWidth = lineWidth.value();
-  context.lineCap = chart.lineCap || 'round';
-  context.lineJoin = chart.lineJoin || 'round';
-  context.miterLimit = null != chart.miterLimit ? chart.miterLimit : 4;
-  context.strokeStyle = chart.stroke;
-  line(data);
-  context.stroke();
+  .x(d => d[0])
+  .y(d => d[1]);
 
   const timeAxisTicks = timeScaleTicks.map(timeScale);
-  
+
   context.beginPath();
   const axisTickDir = timeAxisPosition === 'top' ? -1 : 1;
   const axisLineY = timeAxisPosition === 'top' ? plotBox.top() : plotBox.bottom();
@@ -222,13 +248,6 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
 
     context.fillText(label, yLabelBox.right()-2*tickLength.value(), y);
   });
-
-  const { textColor = '#000' } = chart.axis || {};
-  const legendData = [{ l: seriesLabel, c: chart.stroke, v:null, vl: null }];
-  const legendWidth = Math.abs(plotBox.width());
-  const legend = req.body.chart.showLegend && seriesLabel 
-               ? createLegend(canvas, legendData, LegendStyle.LINE, legendWidth, textColor)
-               : nullShape();
 
   if (legend.height) {
     if (legendPosition === 'top') {
