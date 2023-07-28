@@ -1,3 +1,4 @@
+import { Axis } from "d3";
 import { CustomTimeInterval } from "./custom-time-intervals";
 
 export interface IChartMeta {
@@ -137,6 +138,18 @@ export interface IData {
   s?: string; // optional separate stroke color
   vl: string;
   l: string;
+}
+
+export interface IBarBody extends IChartBody {
+  chart: IChartSpec & {
+    labelColor?: string;
+    stroke: string | string[];
+    showDebug?: boolean;
+    labelPadding?: number;
+    labelOuterPadding?: number;
+    categoryPadding?: number;
+    lastLabelExtraPaddingFactor?: number;
+  }
 }
 
 export interface IPieBody extends IChartBody {

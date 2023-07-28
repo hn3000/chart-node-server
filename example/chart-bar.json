@@ -1,0 +1,43 @@
+{
+  "chart": {
+    "background": "#fff",
+    "width": 1000,
+    "height": 700,
+    "labelFontSize": "3vmin",
+    "labelFontFamily": "Helvetica, sans-serif",
+    "labelStyle": "currency",
+    "stroke": ["#013", "#56834a"],
+    "axis": {
+      "lineWidth": 1,
+      "stroke": "#888",
+      "textColor": "#333"
+    }
+  },
+  "meta": {
+    "value": "v",
+    "label": "l",
+    "category": "c"
+  },
+  "data": [
+    { "l": "Deka-GlobalChampions CF", "c": "Test1", "v": 138.885 },
+    { "l": "Deka-GlobalChampions CF", "c": "Test", "v": 138.279 },
+    { "l": "Group2", "c": "Test1", "v": 140.96699999999998 },
+    { "l": "Group2", "c": "Test", "v": 145.123 },
+    { "l": "Group3", "c": "Test1", "v": 147.208 },
+    { "l": "Group3", "c": "Test", "v": 145.219 },
+    { "l": "Group4", "c": "Test1", "v": 146.10299999999998 },
+    { "l": "Group4", "c": "Test", "v": 143.99699999999999 },
+    { "l": "Group5", "c": "Test1", "v": 144.601 },
+    { "l": "Group5", "c": "Test", "v": 144.659 },
+    { "l": "Group6", "c": "Test1", "v": 145.631 },
+    { "l": "Group6", "c": "Test", "v": 142.504 },
+    { "l": "Group7", "c": "Test1", "v": 138.885 },
+    { "l": "Group7", "c": "Test", "v": 138.279 },
+    { "l": "Group8", "c": "Test1", "v": 140.96699999999998 },
+    { "l": "Group8", "c": "Test", "v": 145.123 },
+    { "l": "Group9", "c": "Test1", "v": 147.208 },
+    { "l": "Group9", "c": "Test", "v": 145.219 },
+    { "l": "Group10", "c": "Test1", "v": 146.10299999999998 },
+    { "l": "Group10", "c": "Test", "v": 143.99699999999999 }
+  ]
+}
