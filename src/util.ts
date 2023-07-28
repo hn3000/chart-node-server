@@ -41,10 +41,10 @@ export function pickNonNull<T>(args: (T|null|undefined)[], fallback: T): T {
   return fallback;
 }
 
-export function valueGetter(name: string, meta: IChartMeta) {
+export function valueGetter<T = any>(name: string, meta: IChartMeta) : ((x: any) => T) {
   const mapped = meta[name];
   if (null != mapped && '' !== mapped) {
-    return x => x[mapped];
+    return x => (x[mapped] as T);
   }
-  return x => x[name];
+  return x => (x[name] as T);
 }
