@@ -1,0 +1,31 @@
+{
+  "chart": {
+    "background": "#fff",
+    "width": 1000,
+    "height": 700,
+    "legendFontSize": "2vmin",
+    "legendFontFamily": "Helvetica, sans-serif",
+    "labelFontSize": "2vmin",
+    "labelFontFamily": "Helvetica, sans-serif",
+    "labelStyle": "currency",
+    "stroke": ["#013", "#56834a"],
+    "axis": {
+      "lineWidth": 1,
+      "stroke": "#888",
+      "textColor": "#333"
+    }
+  },
+  "meta": {
+    "value": "v",
+    "label": "l",
+    "category": "c"
+  },
+  "data": [
+    { "l": "Group1", "c": "Test1", "v": 138.885 },
+    { "l": "Group1", "c": "Test", "v": 138.279 },
+    { "l": "Group2", "c": "Test1", "v": 140.96699999999998 },
+    { "l": "Group2", "c": "Test", "v": 145.123 },
+    { "l": "Group3", "c": "Test1", "v": 147.208 },
+    { "l": "Group3", "c": "Test", "v": 145.219 }
+  ]
+}

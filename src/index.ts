@@ -5,6 +5,7 @@ import * as path from 'path';
 import { renderPie } from './painter-d3-piechart';
 import { renderTimeline } from './painter-d3-timeline';
 import { renderScatter } from './painter-d3-scatter';
+import { renderBar } from './painter-d3-barchart';
 import { UnitFactorsDefault, dimension, dimensionProxy } from './dimension';
 import { box, position } from './position';
 import { parseBoolean } from './util';
@@ -35,6 +36,7 @@ function runServer(argv) {
     pie: renderPie,
     timeline: renderTimeline,
     scatter: renderScatter,
+    bar: renderBar,
   };
   const formats = {
     pdf: [writePDF, 'pdf'],
