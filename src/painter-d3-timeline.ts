@@ -246,9 +246,8 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     const referenceValueScaled = Math.round(valueScaleU(chart.axis.referenceValue));
     const label = valueFormat.format(chart.axis.referenceValue);
     const measureText = context.measureText(label);
-    const marginTop = measureText.actualBoundingBoxAscent;
-    const marginBottom = measureText.actualBoundingBoxDescent;
-    referenceValueBox = box(yLabelBox.left(),referenceValueScaled - marginTop, plotBox.right(), referenceValueScaled + marginBottom);
+    const margin = measureText.actualBoundingBoxAscent + measureText.actualBoundingBoxDescent;
+    referenceValueBox = box(yLabelBox.left(),referenceValueScaled - margin, plotBox.right(), referenceValueScaled + margin);
     axisLine([[yLabelBox.right()-tickLength.value(),referenceValueScaled],[plotBox.right(), referenceValueScaled]]);
   }
   context.strokeStyle = chart?.axis?.referenceStroke || '#345';
