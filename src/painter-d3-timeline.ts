@@ -11,6 +11,10 @@ export interface ITimeLineBody extends IChartBody {
   chart: IChartSpec & { 
     seriesLabel: string | string[];
     stroke: string | string[];
+    axis: {
+      referenceValue?: number;
+      referenceStroke?: string;
+    };
  },
  meta: IChartMeta & {
   value: string | string[]
@@ -21,6 +25,8 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
 
   const body: ITimeLineBody = req.body;
+  console.log('referenceValue', body.chart.axis.referenceValue);
+
   const meta = body.meta;
   const chart = body.chart;
   const getTimestamp = valueGetter('timestamp', meta);
@@ -45,10 +51,10 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   }, { 
     minTime: Number.MAX_VALUE, 
     maxTime: Number.MIN_VALUE,
-    minVal: Number.MAX_VALUE, 
-    maxVal: Number.MIN_VALUE
+    minVal: chart.axis.referenceValue ?? Number.MAX_VALUE, 
+    maxVal: chart.axis.referenceValue ?? Number.MIN_VALUE
   });
-
+  
   const dimDefaults = {
     padX: '2vmin',
     //padY: '1vmin', // commented: let's use padX as default
@@ -230,10 +236,35 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
 
   const valueAxisTicks = valueScaleTicks.map(valueScale);
   context.beginPath();
-  valueAxisTicks.forEach((y,i) => {
-    axisLine([[yLabelBox.right()-tickLength.value(),y],[plotBox.right(), y]])
-  });
 
+  context.font = labelFont;
+  context.textBaseline = 'middle';
+  context.textAlign = 'right';
+
+  let referenceValueBox: IBox = null;
+
+  if(chart.axis.referenceValue) {
+    const referenceValueScaled = Math.round(valueScaleU(chart.axis.referenceValue));
+    const label = valueFormat.format(chart.axis.referenceValue);
+    const measureText = context.measureText(label);
+    const marginTop = measureText.actualBoundingBoxAscent;
+    const marginBottom = measureText.actualBoundingBoxDescent;
+    referenceValueBox = box(yLabelBox.left(),referenceValueScaled - marginTop, plotBox.right(), referenceValueScaled + marginBottom);
+    axisLine([[yLabelBox.right()-tickLength.value(),referenceValueScaled],[plotBox.right(), referenceValueScaled]]);
+  }
+  context.strokeStyle = chart?.axis?.referenceStroke || '#345';
+  context.lineWidth = chart?.axis?.lineWidth || 1;
+
+  context.stroke();
+
+  context.beginPath();
+  valueAxisTicks.forEach((y,i) => {
+    const intersectsReferenceBox = referenceValueBox && y < referenceValueBox.bottom() && y > referenceValueBox.top();
+    if(!intersectsReferenceBox) {
+    axisLine([[yLabelBox.right()-tickLength.value(),y],[plotBox.right(), y]])
+    }
+  });
+  
   context.strokeStyle = chart?.axis?.stroke || '#345';
   context.lineWidth = chart?.axis?.lineWidth || 1;
   context.stroke();
@@ -243,11 +274,26 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   context.font = labelFont;
   context.textBaseline = 'middle';
   context.textAlign = 'right';
-  valueAxisTicks.forEach((y,i) => {
-    const label = valueFormat.format(valueScaleTicks[i]);
 
-    context.fillText(label, yLabelBox.right()-2*tickLength.value(), y);
+  if(chart.axis.referenceValue) {
+    const label = valueFormat.format(chart.axis.referenceValue);
+    const referenceValueScaled = valueScaleU(chart.axis.referenceValue);
+    context.fillText(label, yLabelBox.right()-2*tickLength.value(), referenceValueScaled);
+  }
+
+  valueAxisTicks.forEach((y,i) => {
+    const intersectsReferenceBox = referenceValueBox && y < referenceValueBox.bottom() && y > referenceValueBox.top();
+    if(!intersectsReferenceBox) {
+      const label = valueFormat.format(valueScaleTicks[i]);
+      context.fillText(label, yLabelBox.right()-2*tickLength.value(), y);        
+    }
   });
+
+  if(body.debug?.boxes && referenceValueBox) {
+    context.strokeStyle = '#FF0000';
+    context.strokeRect(referenceValueBox.left(), referenceValueBox.top(), referenceValueBox.width(), referenceValueBox.height());
+  }
+
 
   if (legend.height) {
     if (legendPosition === 'top') {
