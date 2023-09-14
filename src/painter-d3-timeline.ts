@@ -25,7 +25,6 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
 
   const body: ITimeLineBody = req.body;
-  console.log('referenceValue', body.chart.axis.referenceValue);
 
   const meta = body.meta;
   const chart = body.chart;
