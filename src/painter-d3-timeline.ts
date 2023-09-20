@@ -53,7 +53,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     minVal: chart.axis.referenceValue ?? Number.MAX_VALUE, 
     maxVal: chart.axis.referenceValue ?? Number.MIN_VALUE
   });
-  
+
   const dimDefaults = {
     padX: '2vmin',
     //padY: '1vmin', // commented: let's use padX as default
@@ -100,8 +100,14 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
 
   const chartBox = box(0,0, canvas.width, canvas.height).insideBox(padX, padY).resolve(env0);
   const labelFont = `${labelFontSize.value()}px ${labelFontFamily}`
- 
+
   const valueScaleU = d3.scaleLinear().domain([minVal, maxVal]);
+  const valueScaleTicks = valueScaleU.ticks(valueTicks);
+
+  if(chart.valueAxis?.calculateDisplayRange) {
+    TryCalculateDisplayRange(minVal, maxVal, valueTicks, valueScaleU, valueScaleTicks);
+  }
+
   const timeScaleU = d3.scaleTime().domain([minTime, maxTime])
 
   let timeScaleTicks: Array<Date>;
@@ -110,9 +116,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   } else {
     timeScaleTicks = timeScaleU.ticks(timeTicks);
   }
-
-  const valueScaleTicks = valueScaleU.ticks(valueTicks);
-
+  
   // set up label font
 
   context.font = labelFont;
@@ -303,3 +307,41 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   }
 
 }
+
+function TryCalculateDisplayRange(minVal: number, maxVal: number, valueTicks, valueScaleU: d3.ScaleLinear<number,number, never>, valueScaleTicks: number[]) {
+    const distance = maxVal - minVal;
+    let rangeUnit = distance / (valueTicks + 1);
+    let scale = Math.pow(10, Math.floor(Math.log10(rangeUnit)));
+    let scaledStep = Math.ceil(rangeUnit / scale);
+    rangeUnit = scaledStep * scale;
+
+    let rangeMinCeil= Math.ceil(minVal / rangeUnit) * rangeUnit;
+    let rangeMin = Math.floor(minVal / rangeUnit) * rangeUnit;
+    let rangeMax = Math.ceil(maxVal /  rangeUnit) * rangeUnit;
+    let rangeMaxFloor = Math.floor(maxVal /  rangeUnit) * rangeUnit;
+    
+    if(Math.abs(rangeMin - minVal) < Math.abs(minVal - rangeMinCeil)) {
+      minVal = rangeMin;
+      if (minVal > 0) {
+        minVal *= 0.97;
+      }
+      else {
+        minVal *= 1.05;
+      }
+    }
+
+    if(Math.abs(rangeMax - maxVal) < Math.abs(maxVal - rangeMaxFloor)) {
+      maxVal = rangeMax;
+      if(maxVal > 0) {
+        maxVal *= 1.05;
+      } else {
+        maxVal *= 0.97;
+      }
+    }
+
+    valueScaleU = valueScaleU.domain([minVal, maxVal]);
+    valueScaleTicks.splice(0,valueScaleTicks.length);
+    for(var i = 0; rangeMin + i * rangeUnit <= rangeMax; i++) {
+      valueScaleTicks.push(rangeMin + i * rangeUnit);
+    }
+  }
