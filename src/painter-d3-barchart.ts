@@ -161,41 +161,40 @@ export function renderBar(req, canvas: c.Canvas, env0: IUnitFactors) {
     .range([0, labelScale.bandwidth()])
     .paddingInner(categoryPadding);
 
-  const maxLabelMeasureText = maxMeasureText(
-    context,
-    labelFont,
-    labelFontSize.value(),
-    labels
-  );
-
-
   // Start 
 
-  const maxLabelWidthAngled = valueAxisWidth +  labelScale.step() * labelOuterPadding + labelScale.bandwidth() / 2;
+  const maxWorldLength = labels.reduce((a: number, b: string) => { 
+    return Math.max(...[a, ...(b.split(' ').map(x => context.measureText(x).width))]);
+  }, Number.MIN_VALUE);
 
-  const maxLabelWidthStraight = labelScale.step();
+  const maxLabelWidthAngled = valueAxisWidth +  labelScale.step() * labelOuterPadding + labelScale.bandwidth();
+  const maxLabelWidthStraight = labelScale.step() - 2 * context.measureText(" ").width;
 
+  // Line Breaks
 
-  // Calculate group label rotation angle
-  const labelRotation = calculateRotation(
-    maxLabelMeasureText,
-    maxLabelWidthAngled,
-    maxLabelWidthStraight
-  );
+  const multilineLabels = labels.map(l => toMultiLine(l, Math.max(maxWorldLength, maxLabelWidthStraight), context));
 
-  console.log(maxLabelMeasureText, maxLabelWidthStraight, maxLabelWidthAngled, labelScale.step(),labelScale.bandwidth(), labelRotation * 180 / Math.PI);
+  let labelRotation = multilineLabels.reduce(
+    (a: number, l: { width: number, height: number, lines: string[]}) => {
+      const rotation = calculateRotation(l.width, l.height, maxLabelWidthStraight, maxLabelWidthAngled);
+      return Math.max(rotation, a);
+    }, 0);
 
-  const maxGroupLabelHeight = calculateRotatedBoundingBox(
-    maxLabelMeasureText,
-    labelRotation
-  ).height;
+  labelRotation = calcRotationWithoutIntersection(multilineLabels, labelScale.step(), labelRotation);
+
+  let groupLabelHeight = Math.max(...multilineLabels.map(l => calculateRotatedBoundingBox(l.width,l.height, labelRotation).height));
+
+  let firstGroupLabelWidth = multilineLabels[0].width;
+
+  let groupLabelOffset = maxLabelWidthAngled - firstGroupLabelWidth;
+
 
   // Calculate corner position
   let cornerPos = chartBox
     .bottomLeft()
     .rightBy(valueAxisWidth)
     .aboveBy(
-      legend.height + maxGroupLabelHeight + labelTextHeight * 2 
+      legend.height + groupLabelHeight + labelTextHeight * 2 
     );
 
   // Calculate yLabelBox
@@ -217,8 +216,6 @@ export function renderBar(req, canvas: c.Canvas, env0: IUnitFactors) {
     valueLables
   );
 
-  console.log('valueLabelFont', valueLabelFont);
-
   // Calculate LegendBox
   const legendBox = box(
     chartBox.bottomLeft(),
@@ -232,11 +229,11 @@ export function renderBar(req, canvas: c.Canvas, env0: IUnitFactors) {
   legend.paint(canvas);
   context.restore();
 
-  // Debug
-  if(showDebug) {
-    context.fillStyle = '#FF0000';
-    context.fillRect(0, cornerPos.y(), maxLabelWidthAngled, cornerPos.y() + 10);  
-  }
+  // // Debug
+  // if(showDebug) {
+  //   context.fillStyle = '#FF0000';
+  //   context.fillRect(0, cornerPos.y(), maxLabelWidthAngled, cornerPos.y() + 10);  
+  // }
 
   // Calculate Value Axis Ticks & Scale
   const vhRange = [plotBox.bottom(), plotBox.top()];
@@ -325,23 +322,28 @@ export function renderBar(req, canvas: c.Canvas, env0: IUnitFactors) {
     context.save();
     context.font = labelFont;
     context.fillStyle = chart.axis?.textColor;
-    context.textBaseline = "middle";
+    
+    context.textBaseline = "top";
     context.textAlign = "center";
 
-    const textMetric = context.measureText(l);
+    const multilineLabel = multilineLabels[idx];
 
     if (labelRotation) {
       const { width: bWidth, height: bHeight } = calculateRotatedBoundingBox(
-        textMetric,
+        multilineLabel.width, multilineLabel.height,
         labelRotation
       );
+      
+      context.textBaseline = "hanging";
+      context.textAlign = "right";
 
-      if(labelRotation < (Math.PI / 2) - 0.0001 ) {
-        x -= bWidth / 2;
-        x += (textMetric.actualBoundingBoxAscent +textMetric.actualBoundingBoxDescent) * Math.sin(labelRotation);
-      }
 
-      y += bHeight / 2;
+      x += labelScale.bandwidth() * 1 / 3;
+
+      // if(maxLabelWidthStraight > bWidth) {
+      //   x += (maxLabelWidthStraight - bWidth) / 2;
+      // } else {
+      // }
     }
 
     context.translate(x, y);
@@ -351,30 +353,22 @@ export function renderBar(req, canvas: c.Canvas, env0: IUnitFactors) {
 
     if (showDebug) {
       context.strokeStyle = "#00FF00";
-      const metricsHeight = calculateMeasureTextHeight(textMetric);
-      context.strokeRect(
-        -textMetric.width / 2,
-        -metricsHeight / 2,
-        textMetric.width,
-        metricsHeight
-      );
+      if(labelRotation) {
+        context.strokeRect(-multilineLabel.width, 0, multilineLabel.width, multilineLabel.height);
+      } else {
+        context.strokeRect(-multilineLabel.width / 2, 0, multilineLabel.width, multilineLabel.height);
+      }
+      
+      context.strokeStyle = "#0000FF";
+      context.strokeRect(-1,-1,2,2);
     }
 
-    context.fillText(l, 0, 0);
+    context.fillText(multilineLabel.lines.join('\n'), 0, 0);
     context.restore();
   });
 }
 
-function calculateMeasureTextHeight(textMetrics: TextMetrics): number {
-  return (
-    textMetrics.actualBoundingBoxAscent + textMetrics.actualBoundingBoxDescent
-  );
-}
-
-function calculateRotatedBoundingBox(textMetrics: TextMetrics, angle: number) {
-  const h = calculateMeasureTextHeight(textMetrics);
-  const w = textMetrics.width;
-
+function calculateRotatedBoundingBox(w: number, h: number, angle: number) {
   const sin = Math.sin(angle);
   const cos = Math.cos(angle);
 
@@ -390,40 +384,12 @@ function calculateRotatedBoundingBox(textMetrics: TextMetrics, angle: number) {
   return { width, height };
 }
 
-function maxMeasureText(
-  context: c.CanvasRenderingContext2D,
-  labelFontFamily: string,
-  labelFontSize: number,
-  labels: string[]
-): TextMetrics {
-  context.save();
-  let labelFont = `${labelFontSize}px ${labelFontFamily}`;
-  context.font = labelFont;
-  context.restore();
-
-  let maxWidth = Number.MIN_VALUE;
-  let metric: TextMetrics = null;
-
-  labels.forEach((t) => {
-    const m = context.measureText(t);
-    const w = m.width;
-    if (w > maxWidth) {
-      maxWidth = w;
-      metric = m;
-    }
-  });
-  return metric;
-}
-
 function calculateRotation(
-  textMetrics: TextMetrics,
-  maxLabelWidthAngled: number,
+  w: number,
+  h: number,
   maxLabelWidthStraight: number,
+  maxLabelWidthAngled: number,
 ): number {
-
-  let h = calculateMeasureTextHeight(textMetrics)
-
-  let w = textMetrics.width;
 
   let minAngle = Math.asin( 3*h / ( 2 * maxLabelWidthStraight) );
 
@@ -431,12 +397,8 @@ function calculateRotation(
     return 0;
   }
 
-  if(3* h > 2 * maxLabelWidthStraight) {
-    return Math.PI / 2;
-  }
-
   if (maxLabelWidthAngled > w) {
-    return minAngle;
+    return 0;
   }
 
   let W = maxLabelWidthAngled;
@@ -484,4 +446,79 @@ function calculateLastGroupPaddingCorrection(
   extra: number
 ): number {
   return (W / (N + padding * (N - 1 + extra))) * padding * extra;
+}
+
+function toMultiLine(label: string, lineWidth: number, context: c.CanvasRenderingContext2D) : { width: number, height: number, lines: string[]} {
+  
+  const labelMeasure = context.measureText(label) as any;
+  const lineHeight = (labelMeasure as any).emHeightAscent + labelMeasure.emHeightDescent;
+
+  if(labelMeasure.width <  lineWidth) {
+    return { width: labelMeasure.width, height: lineHeight, lines : [ label ]};
+  }
+
+  const sWidth = context.measureText(' ').width;
+  const words = label.split(' ').map(p => ({text: p, length: context.measureText(p).width}));
+  
+  const lines :string[] =  [ '' ];
+
+  let currentLine = 0; 
+  let currentLength = 0;
+  for(let i = 0; i < words.length; i++) {
+    let currentWord = words[i];
+    
+    if(currentWord.length + currentLength > lineWidth ) {
+      lines[++currentLine] = '';
+      currentLength = 0;
+    }
+
+    if(currentLength) {
+      lines[currentLine] += ' ';
+      currentLength += sWidth;
+    }
+
+    lines[currentLine] += currentWord.text;
+    currentLength += currentWord.length;
+  }
+
+  const newLabelMeasure = context.measureText(lines.join('\n'));
+  return {
+    width: newLabelMeasure.width + sWidth *2,
+    height: lineHeight * lines.length, 
+    lines: lines
+  };
+}
+
+function calcRotationWithoutIntersection(labelsBoxes: { width: number, height: number}[], distance: number, angle: number = 0 ) {
+
+  for(var degrees = Math.ceil(angle / (Math.PI / 180)); degrees < 90; degrees++) {
+
+    let intersection = false;
+    angle = degrees * Math.PI / 180;
+    let xDistance = Math.cos(angle) * distance;
+    let yDistance = Math.sin(angle) * distance;
+    
+    for(var i = 0; i < labelsBoxes.length -2;i++) {
+    
+      let boxA  = labelsBoxes[i];
+      let boxB  = labelsBoxes[i+1];
+
+      if(degrees > 0) {
+        intersection = boxA.height > yDistance && boxB.width > xDistance;
+      } else {
+        intersection = (boxA.width + boxB.width) / 2 > xDistance;
+      }
+          
+      if(intersection) {
+        break; 
+      }
+
+    }
+
+    if(!intersection) {
+      break;
+    }
+  }
+
+  return angle;
 }
