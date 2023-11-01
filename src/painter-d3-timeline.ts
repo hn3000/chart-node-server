@@ -42,7 +42,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     const t = getTimestamp(x);
     r.minTime = Math.min(t, r.minTime);
     r.maxTime = Math.max(t, r.maxTime);
-    const v : number[] = seriesMappers.map(mapper => mapper(x)); 
+    const v : number[] = seriesMappers.map(mapper => mapper(x)).filter((x: Number) => x != undefined); 
     r.minVal = Math.min(...[...v, r.minVal]);
     r.maxVal = Math.max(...[...v, r.maxVal]);
 
@@ -53,7 +53,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     minVal: chart.axis.referenceValue ?? Number.MAX_VALUE, 
     maxVal: chart.axis.referenceValue ?? Number.MIN_VALUE
   });
-  
+
   const dimDefaults = {
     padX: '2vmin',
     //padY: '1vmin', // commented: let's use padX as default
