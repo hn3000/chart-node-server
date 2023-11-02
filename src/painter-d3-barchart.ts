@@ -6,10 +6,9 @@ import { Box, box, IBox } from "./position";
 import { IUnitFactors, dimension, dimensionProxy } from "./dimension";
 import { createLegend, IShape, LegendStyle, nullShape } from "./canvas-legend";
 
-export function renderBar(req, canvas: c.Canvas, env0: IUnitFactors) {
+export function renderBar(body: IBarBody, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
 
-  const body: IBarBody = req.body;
   const meta = body.meta;
   const chart = body.chart;
 
@@ -18,7 +17,7 @@ export function renderBar(req, canvas: c.Canvas, env0: IUnitFactors) {
   const category = valueGetter<string>("category", meta);
   const label = valueGetter<string>("label", meta);
 
-  const data: any[] = req.body.data;
+  const data: any[] = body.data;
 
   const {
     maxVal,
@@ -253,7 +252,7 @@ export function renderBar(req, canvas: c.Canvas, env0: IUnitFactors) {
   // Draw Value Axis Tick Lines
   const axisLine = d3
     .line()
-    .context(context)
+    .context(context as any)
     .x((d) => d[0])
     .y((d) => d[1]);
 

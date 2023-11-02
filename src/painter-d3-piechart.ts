@@ -7,12 +7,11 @@ import { IUnitFactors, dimensionProxy } from './dimension';
 import { position, box, IBox, IPosition } from './position';
 import { valueGetter } from './util';
 
-export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
+export function renderPie(body: IPieBody, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
 
   const defaultColors = ["#579", "#597", "#759", "#795", "#975", "#957"];
 
-  const body: IPieBody = req.body;
   const { colors=defaultColors } = body.chart;
   const meta = body.meta;
 
@@ -170,8 +169,8 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
     .innerRadius(innerRadius.value())
     .outerRadius(outerRadius.value())
     .cornerRadius(cornerRadius.value())
-    .context(context);
-  let drawLine = d3.line().context(context);
+    .context(context as any);
+  let drawLine = d3.line().context(context as any);
 
   //console.log(pie);
   //console.log('pos', pieBox.center().x(), pieBox.center().y());
@@ -221,7 +220,6 @@ export function renderPie(req, canvas: c.Canvas, env0: IUnitFactors) {
  
       context.fillText(labelTxt, ...labelCenter.xy());
       context.restore();
-
 
       if (showLabelDebug) {
         context.moveTo(labelR,0);
