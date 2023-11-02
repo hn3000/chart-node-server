@@ -1,14 +1,15 @@
 {
   "chart": {
     "background": "#fff",
-    "width": 1000,
-    "height": 700,
-    "legendFontSize": "2vmin",
+    "width": 1690,
+    "height": 560,
+    "legendFontSize": "3vmin",
     "legendFontFamily": "Helvetica, sans-serif",
-    "labelFontSize": "2vmin",
+    "labelFontSize": "3vmin",
     "labelFontFamily": "Helvetica, sans-serif",
     "labelStyle": "currency",
-    "stroke": ["#013", "#56834a"],
+    "labelOuterPadding": 0.2,
+    "stroke": ["#B9D5D7", "#569196"],
     "axis": {
       "lineWidth": 1,
       "stroke": "#888",
@@ -21,11 +22,17 @@
     "category": "c"
   },
   "data": [
-    { "l": "Group1", "c": "Test1", "v": 138.885 },
-    { "l": "Group1", "c": "Test", "v": 138.279 },
-    { "l": "Group2", "c": "Test1", "v": 140.96699999999998 },
-    { "l": "Group2", "c": "Test", "v": 145.123 },
-    { "l": "Group3", "c": "Test1", "v": 147.208 },
-    { "l": "Group3", "c": "Test", "v": 145.219 }
+    { "l": "ABCD-Dingsbums DD", "c": "Eingezahlt", "v": 138.885 },
+    { "l": "ABCD-Dingsbums DD", "c": "Endwert", "v": 138.279 },
+    { "l": "Mercator (AB) Portfolio Fund Responsible (CDE) AA", "c": "Eingezahlt", "v": 140.96699999999998 },
+    { "l": "Mercator (AB) Portfolio Fund Responsible (CDE) AA", "c": "Endwert", "v": 145.123 },
+    { "l": "Harlequin U2 Alternative Strategies Fund A (Sidy) GBP-Z1", "c": "Eingezahlt", "v": 147.208 },
+    { "l": "Harlequin U2 Alternative Strategies Fund A (Sidy) GBP-Z1", "c": "Endwert", "v": 145.219 },
+    { "l": "APM Engineering Markets Start.Link A (prod)(test) - GHI embraced", "c": "Eingezahlt", "v": 138.885 },
+    { "l": "APM Engineering Markets Start.Link A (prod)(test) - GHI embraced", "c": "Endwert", "v": 138.279 },
+    { "l": "Mercator (AB) Link Fund Secured High Supply XYZ MNO", "c": "Eingezahlt", "v": 140.96699999999998 },
+    { "l": "Mercator (AB) Link Fund Secured High Supply XYZ MNO", "c": "Endwert", "v": 145.123 },
+    { "l": "Durchschnitt", "c": "Eingezahlt", "v": 147.208 },
+    { "l": "Durchschnitt", "c": "Endwert", "v": 145.219 }
   ]
 }
