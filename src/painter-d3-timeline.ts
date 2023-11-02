@@ -1,30 +1,14 @@
 import * as d3 from 'd3';
-import { IChartBody, IChartMeta, IChartSpec } from './api';
+import { ITimeLineBody } from './api';
 import * as c from 'canvas';
-import { LegendStyle, createLegend, nullShape } from './canvas-legend';
+import { LegendPosition, LegendStyle, createLegend, nullShape } from './canvas-legend';
 import { IUnitFactors, dimension, dimensionProxy } from './dimension';
 import * as TimeIntervals from './custom-time-intervals';
 import { box, IBox } from './position';
 import { valueGetter } from './util';
- 
-export interface ITimeLineBody extends IChartBody {
-  chart: IChartSpec & { 
-    seriesLabel: string | string[];
-    stroke: string | string[];
-    axis: {
-      referenceValue?: number;
-      referenceStroke?: string;
-    };
- },
- meta: IChartMeta & {
-  value: string | string[]
- }
-}
 
-export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
+export function renderTimeline(body: ITimeLineBody, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
-
-  const body: ITimeLineBody = req.body;
 
   const meta = body.meta;
   const chart = body.chart;
@@ -36,7 +20,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const seriesLabel = Array.isArray(chart.seriesLabel) ? chart.seriesLabel : [ chart.seriesLabel];
   const seriesMappers = value.map(v => valueGetter(v, meta));
 
-  const data = req.body.data;
+  const data = body.data;
 
   const { minTime, maxTime, minVal, maxVal } = data.reduce((r,x) => {
     const t = getTimestamp(x);
@@ -59,7 +43,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     //padY: '1vmin', // commented: let's use padX as default
     labelFontSize: '2.5vmin',
     tickLength: '1.5vmin',
-    lineWidth: '2px',
+    lineWidth: '2px'
   };
   const dimensions = dimensionProxy(chart, dimDefaults, () => env0);
   const {
@@ -69,6 +53,14 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     lineWidth,
     tickLength,
   } = dimensions;
+
+  const legendDefaults = { lineWidth, sampleHeight: 0.65, sampleWidth: 0.65 };
+  const {
+    lineWidth: legendLineWidth,
+    sampleHeight,
+    sampleWidth = sampleHeight
+  } = dimensionProxy(chart.legend ?? {}, legendDefaults, () => env0);
+
   const { 
     labelFontFamily = 'Helvetica,"sans-serif"',
     months = 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec'.split(','),
@@ -142,7 +134,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   let xLabelBox: IBox;
   let yLabelBox: IBox;
   let plotBox: IBox;
-  let legendPosition: string;
+  let legendPosition: LegendPosition;
   if (timeAxisPosition === 'top') {
     let cornerPos = chartBox.topLeft().rightBy(valueAxisWidth).belowBy(timeAxisHeight);
     xLabelBox = box(cornerPos, chartBox.topRight()).resolve(env0);
@@ -160,8 +152,8 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const { textColor = '#000' } = chart.axis || {};
   const legendWidth = Math.abs(plotBox.width());
   const legendData = seriesLabel.map((label, idx) => ({ l: label, c: stroke[idx], v: null, vl: null }));
-  const legend = req.body.chart.showLegend && seriesLabel 
-               ? createLegend(canvas, legendData, LegendStyle.LINE, legendWidth, textColor)
+  const legend = chart.showLegend && seriesLabel 
+               ? createLegend(canvas, legendData, LegendStyle.LINE, legendWidth, textColor, 'center', legendPosition, false, null, sampleWidth.value(), sampleHeight.value(), legendLineWidth)
                : nullShape();
 
   let vhRange : number[];
@@ -177,7 +169,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const timeScale = timeScaleU.range(vwRange);
   
   for(let i = 0; i< seriesMappers.length; i++) {
-    const linePainter = d3.line().context(context);
+    const linePainter = d3.line().context(context as any);
 
     const getValue = seriesMappers[i];
     const line = linePainter
@@ -195,7 +187,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     context.stroke();
   }
 
-  const axisLine = d3.line().context(context)
+  const axisLine = d3.line().context(context as any)
   .x(d => d[0])
   .y(d => d[1]);
 

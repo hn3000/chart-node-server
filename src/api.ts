@@ -126,6 +126,7 @@ export interface IChartSpec {
 export interface IChartBody {
   meta: IChartMeta;
   chart: IChartSpec;
+  data: any[];
   debug?: {
     boxes: boolean;
   }
@@ -151,6 +152,7 @@ export interface IBarBody extends IChartBody {
     lastLabelExtraPaddingFactor?: number;
   }
 }
+
 
 export interface IPieBody extends IChartBody {
   data: any[];
@@ -186,5 +188,23 @@ export interface IScatterChartBody extends IChartBody {
     legendFontSize: string|number;
     legendItemPerRow?: boolean;
   }
+}
+
+export interface ITimeLineBody extends IChartBody {
+  chart: IChartSpec & { 
+    seriesLabel: string | string[];
+    stroke: string | string[];
+    showLegend?: boolean;
+    axis: {
+      referenceValue?: number;
+      referenceStroke?: string;
+    };
+    legend: {
+      lineWidth?: number|string;
+    }
+  };
+  meta: IChartMeta & {
+    value: string | string[]
+  };
 }
 

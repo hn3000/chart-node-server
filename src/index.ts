@@ -110,7 +110,7 @@ function createImage(painter, [writer, type], req, res) {
       ...UnitFactorsDefault
     };
   
-    painter(req, canvas, env0);
+    painter(req.body, canvas, env0);
     maybeRenderWatermark(req, canvas, watermark, width, height, env0);
     writer(canvas, res);
   }
