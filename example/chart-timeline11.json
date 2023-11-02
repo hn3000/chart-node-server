@@ -1,0 +1,48 @@
+{
+  "testcase": "check range extension through overshootTolerance with negative minVal",
+  "meta": {
+    "value": "v",
+    "label": "vl",
+    "legend": "l",
+    "timestamp": "t"
+  },
+  "chart": {
+    "labelFontSize": "2vmin",
+    "labelFontFamily": "Helvetica, sans-serif",
+    "tickLength": "1vmin", 
+    "background": "#333",
+    "width": 1000,
+    "height": 700,
+    "padX": "3.5vmin",
+    "padY": "2.5vmin",
+    "cornerRadius": 0,
+    "innerRadius": 0,
+    "lineWidth": 2,
+    "stroke": "#fff",
+    "seriesLabel": "Data",
+    "showLegend": false,
+    "locale": "de-DE",
+    "axis": {
+      "lineWidth": 1,
+      "stroke": "#ccc",
+      "textColor": "#fff"
+    },
+    "timeAxis": {
+      "position": "top"
+    },
+    "valueAxis": {
+      "labelStyle": "percent",
+      "labelPrecision": 2,
+      "overshootTolerance": 0.5,
+      "tickCount": 6
+    }
+  },
+  "data": [
+    {"t":1555970000000,"v":96},
+    {"t":1555970400000,"v":-10},
+    {"t":1555970800000,"v":-80},
+    {"t":1555971200000,"v":-60},
+    {"t":1555971600000,"v":-80},
+    {"t":1555972000000,"v":-135}
+  ]
+}
