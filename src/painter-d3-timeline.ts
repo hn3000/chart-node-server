@@ -101,12 +101,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const chartBox = box(0,0, canvas.width, canvas.height).insideBox(padX, padY).resolve(env0);
   const labelFont = `${labelFontSize.value()}px ${labelFontFamily}`
 
-  const valueScaleU = d3.scaleLinear().domain([minVal, maxVal]);
-  const valueScaleTicks = valueScaleU.ticks(valueTicks);
-
-  if(chart.valueAxis?.calculateDisplayRange) {
-    TryCalculateDisplayRange(minVal, maxVal, valueTicks, valueScaleU, valueScaleTicks);
-  }
+  const { valueScaleU, valueScaleTicks } = calculateScales(minVal, maxVal, valueTicks, chart.valueAxis?.nice, chart.valueAxis?.overshootTolerance);  
 
   const timeScaleU = d3.scaleTime().domain([minTime, maxTime])
 
@@ -181,7 +176,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const timeScale = timeScaleU.range(vwRange);
   
   for(let i = 0; i< seriesMappers.length; i++) {
-    const linePainter = d3.line().context(context);
+    const linePainter = d3.line().context(context as any);
 
     const getValue = seriesMappers[i];
     const line = linePainter
@@ -308,40 +303,38 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
 
 }
 
-function TryCalculateDisplayRange(minVal: number, maxVal: number, valueTicks, valueScaleU: d3.ScaleLinear<number,number, never>, valueScaleTicks: number[]) {
-    const distance = maxVal - minVal;
-    let rangeUnit = distance / (valueTicks + 1);
-    let scale = Math.pow(10, Math.floor(Math.log10(rangeUnit)));
-    let scaledStep = Math.ceil(rangeUnit / scale);
-    rangeUnit = scaledStep * scale;
+function calculateScales(minVal: number, maxVal: number, tickCount: number, nice: boolean, overshootTolerance?: boolean|number) {
+  let valueScaleU = d3.scaleLinear().domain([minVal, maxVal]);
+  if (nice) {
+    valueScaleU = valueScaleU.nice(tickCount);
+  }
+  let valueScaleTicks = valueScaleU.ticks(tickCount);
 
-    let rangeMinCeil= Math.ceil(minVal / rangeUnit) * rangeUnit;
-    let rangeMin = Math.floor(minVal / rangeUnit) * rangeUnit;
-    let rangeMax = Math.ceil(maxVal /  rangeUnit) * rangeUnit;
-    let rangeMaxFloor = Math.floor(maxVal /  rangeUnit) * rangeUnit;
-    
-    if(Math.abs(rangeMin - minVal) < Math.abs(minVal - rangeMinCeil)) {
-      minVal = rangeMin;
-      if (minVal > 0) {
-        minVal *= 0.97;
-      }
-      else {
-        minVal *= 1.05;
-      }
+  if (overshootTolerance === true) {
+    overshootTolerance = 0.5;
+  } else if (overshootTolerance === false) {
+    overshootTolerance = 0;
+  }
+
+  if (overshootTolerance > 0) {
+    const minTick = Math.min(...valueScaleTicks);
+    const maxTick = Math.max(...valueScaleTicks);
+    const delta = (maxTick - minTick) / ( valueScaleTicks.length -1); // assume equidistant ticks
+    let newMinVal = minVal;
+    let newMaxVal = maxVal;
+    if ((minTick-minVal) >= delta*overshootTolerance) {
+      newMinVal = minTick - delta;
     }
-
-    if(Math.abs(rangeMax - maxVal) < Math.abs(maxVal - rangeMaxFloor)) {
-      maxVal = rangeMax;
-      if(maxVal > 0) {
-        maxVal *= 1.05;
-      } else {
-        maxVal *= 0.97;
-      }
+    if ((maxVal-maxTick) >= delta*overshootTolerance) {
+      newMaxVal = maxTick + delta;
     }
-
-    valueScaleU = valueScaleU.domain([minVal, maxVal]);
-    valueScaleTicks.splice(0,valueScaleTicks.length);
-    for(var i = 0; rangeMin + i * rangeUnit <= rangeMax; i++) {
-      valueScaleTicks.push(rangeMin + i * rangeUnit);
+    if (newMinVal !== minVal || newMaxVal !== maxVal) {
+      console.log("adjusting min / max", minVal, newMinVal, maxVal, newMaxVal);
+      valueScaleU = d3.scaleLinear().domain([newMinVal, newMaxVal]);
+      valueScaleTicks = valueScaleU.ticks(tickCount);
+    } else {
+      console.log("min / max were fine?", minVal, newMinVal, maxVal, newMaxVal);
     }
   }
+  return { valueScaleU, valueScaleTicks };
+}

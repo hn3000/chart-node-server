@@ -78,7 +78,7 @@ export interface IChartSpec {
     position: 'left';
     nice?: boolean;
     tickCount?:number;
-    calculateDisplayRange?: boolean;
+    overshootTolerance?: number;
     labelPrecision?: number;
     labelStyle?: 'decimal'|'percent'|'currency';
     labelCurrency?: string;
