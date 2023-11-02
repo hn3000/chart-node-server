@@ -147,7 +147,7 @@ export function createLegendEntry(
   if (style === LegendStyle.BOX) {
     marker = createBoxMarker(markerHeight, markerHeight, color, null, 0);
   } else if (style === LegendStyle.LINE) {
-    marker = createLineMarker(markerHeight, ascent, null, color, 0.05*ascent);
+    marker = createLineMarker(markerHeight, ascent, null, color, 0.2*ascent);
   } else if (style === LegendStyle.SHAPE) {
     marker = createShapeMarker(entry['drawShape'], markerHeight, markerHeight, entry.c, entry.s, 1);
   } else {
