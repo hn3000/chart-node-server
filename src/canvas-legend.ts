@@ -1,8 +1,8 @@
 
 import * as c from 'canvas';
 import { IData } from './api';
-import { Dimension } from './dimension';
 import { IPosition } from './position';
+import { IDimension } from './dimension';
 
 export interface IShape {
   width: number;
@@ -128,28 +128,33 @@ export function createTextShape(
   });
 }
 
+
+
 export function createLegendEntry(
   canvas: c.Canvas, 
   style: LegendStyle, color: string,
   text: string, textColor: string,
   entry: IData,
-  sampleHeight = 0.65
+  sampleWidth = 0.65,
+  sampleHeight = 0.65,
+  lineWidth: IDimension
 ): IShape {
   const ctx = canvas.getContext('2d');
   ctx.textBaseline = 'alphabetic';
   let textMetrics = ctx.measureText(text);
   let ascent = textMetrics.actualBoundingBoxAscent;
   let marker: IShape;
+  let markerWidth = Math.ceil(sampleWidth*ascent);
   let markerHeight = Math.ceil(sampleHeight*ascent);
   let markerX = 0;
   let markerY = Math.floor((1-sampleHeight)*5/8 * ascent);
   
   if (style === LegendStyle.BOX) {
-    marker = createBoxMarker(markerHeight, markerHeight, color, null, 0);
+    marker = createBoxMarker(markerWidth, markerHeight, color, null, 0);
   } else if (style === LegendStyle.LINE) {
-    marker = createLineMarker(markerHeight, ascent, null, color, 0.05*ascent);
+    marker = createLineMarker(markerWidth, markerHeight, null, color, lineWidth.value());
   } else if (style === LegendStyle.SHAPE) {
-    marker = createShapeMarker(entry['drawShape'], markerHeight, markerHeight, entry.c, entry.s, 1);
+    marker = createShapeMarker(entry['drawShape'], markerWidth, markerHeight, entry.c, entry.s, 1);
   } else {
     marker = nullShape();
   }
@@ -192,9 +197,11 @@ export function createLegend(
   position: LegendPosition = 'top',
   oneItemPerRow: boolean = false,
   size: number = null,
-  sampleHeight = 0.65
+  sampleWidth = 0.65,
+  sampleHeight = 0.65,
+  strokeWidth: IDimension|null = null
 ): ILegendShape {
-  const legendEntries = data.map(x => createLegendEntry(canvas, style, x.c, x.l, textColor, x, sampleHeight));
+  const legendEntries = data.map(x => createLegendEntry(canvas, style, x.c, x.l, textColor, x, sampleWidth, sampleHeight, strokeWidth));
   const lines: {shape: IShape, x: number}[][] = [];
   const lineWidths: number[] = [];
   const positions = [];
