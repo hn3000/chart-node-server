@@ -167,7 +167,7 @@ export function renderBar(body: IBarBody, canvas: c.Canvas, env0: IUnitFactors) 
   }, Number.MIN_VALUE);
 
   const maxLabelWidthAngled = valueAxisWidth +  labelScale.step() * labelOuterPadding + labelScale.bandwidth();
-  const maxLabelWidthStraight = labelScale.step() - 2 * context.measureText(" ").width;
+  const maxLabelWidthStraight = labelScale.step() - 4 * context.measureText(" ").width;
 
   // Line Breaks
 
