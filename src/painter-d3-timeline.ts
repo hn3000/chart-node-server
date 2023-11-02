@@ -92,8 +92,9 @@ export function renderTimeline(body: ITimeLineBody, canvas: c.Canvas, env0: IUni
 
   const chartBox = box(0,0, canvas.width, canvas.height).insideBox(padX, padY).resolve(env0);
   const labelFont = `${labelFontSize.value()}px ${labelFontFamily}`
- 
-  const valueScaleU = d3.scaleLinear().domain([minVal, maxVal]);
+
+  const { valueScaleU, valueScaleTicks } = calculateScales(minVal, maxVal, valueTicks, chart.valueAxis?.nice, chart.valueAxis?.overshootTolerance);  
+
   const timeScaleU = d3.scaleTime().domain([minTime, maxTime])
 
   let timeScaleTicks: Array<Date>;
@@ -102,9 +103,7 @@ export function renderTimeline(body: ITimeLineBody, canvas: c.Canvas, env0: IUni
   } else {
     timeScaleTicks = timeScaleU.ticks(timeTicks);
   }
-
-  const valueScaleTicks = valueScaleU.ticks(valueTicks);
-
+  
   // set up label font
 
   context.font = labelFont;
@@ -294,4 +293,40 @@ export function renderTimeline(body: ITimeLineBody, canvas: c.Canvas, env0: IUni
     legend.paint(canvas);
   }
 
+}
+
+function calculateScales(minVal: number, maxVal: number, tickCount: number, nice: boolean, overshootTolerance?: boolean|number) {
+  let valueScaleU = d3.scaleLinear().domain([minVal, maxVal]);
+  if (nice) {
+    valueScaleU = valueScaleU.nice(tickCount);
+  }
+  let valueScaleTicks = valueScaleU.ticks(tickCount);
+
+  if (overshootTolerance === true) {
+    overshootTolerance = 0.5;
+  } else if (overshootTolerance === false) {
+    overshootTolerance = 0;
+  }
+
+  if (overshootTolerance > 0) {
+    const minTick = Math.min(...valueScaleTicks);
+    const maxTick = Math.max(...valueScaleTicks);
+    const delta = (maxTick - minTick) / ( valueScaleTicks.length -1); // assume equidistant ticks
+    let newMinVal = minVal;
+    let newMaxVal = maxVal;
+    if ((minTick-minVal) >= delta*overshootTolerance) {
+      newMinVal = minTick - delta;
+    }
+    if ((maxVal-maxTick) >= delta*overshootTolerance) {
+      newMaxVal = maxTick + delta;
+    }
+    if (newMinVal !== minVal || newMaxVal !== maxVal) {
+      console.log("adjusting min / max", minVal, newMinVal, maxVal, newMaxVal);
+      valueScaleU = d3.scaleLinear().domain([newMinVal, newMaxVal]);
+      valueScaleTicks = valueScaleU.ticks(tickCount);
+    } else {
+      console.log("min / max were fine?", minVal, newMinVal, maxVal, newMaxVal);
+    }
+  }
+  return { valueScaleU, valueScaleTicks };
 }
