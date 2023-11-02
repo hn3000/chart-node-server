@@ -8,10 +8,9 @@ import { valueGetter } from './util';
 
 require('@hn3000/canvas-5-polyfill');
 
-export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
+export function renderScatter(body: IScatterChartBody, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
 
-  const body: IScatterChartBody = req.body;
   const meta = body.meta;
   const chart = body.chart;
 
@@ -164,7 +163,7 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
     }
   };
 
-  const data = req.body.data.map((d,i) => ({
+  const data = body.data.map((d,i) => ({
     ...d, 
     xValue: getXValue(d), 
     yValue: getYValue(d),
@@ -334,7 +333,7 @@ export function renderScatter(req, canvas: c.Canvas, env0: IUnitFactors) {
   const valueScaleX = valueScaleXU.range(vwRange);
   const valueScaleY = valueScaleYU.range(vhRange);
 
-  const axisLine = d3.line().context(context)
+  const axisLine = d3.line().context(context as any)
                   .x(d => d[0])
                   .y(d => d[1]);
 

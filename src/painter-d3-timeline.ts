@@ -1,30 +1,14 @@
 import * as d3 from 'd3';
-import { IChartBody, IChartMeta, IChartSpec } from './api';
+import { ITimeLineBody } from './api';
 import * as c from 'canvas';
-import { LegendStyle, createLegend, nullShape } from './canvas-legend';
+import { LegendPosition, LegendStyle, createLegend, nullShape } from './canvas-legend';
 import { IUnitFactors, dimension, dimensionProxy } from './dimension';
 import * as TimeIntervals from './custom-time-intervals';
 import { box, IBox } from './position';
 import { valueGetter } from './util';
- 
-export interface ITimeLineBody extends IChartBody {
-  chart: IChartSpec & { 
-    seriesLabel: string | string[];
-    stroke: string | string[];
-    axis: {
-      referenceValue?: number;
-      referenceStroke?: string;
-    };
- },
- meta: IChartMeta & {
-  value: string | string[]
- }
-}
 
-export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
+export function renderTimeline(body: ITimeLineBody, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
-
-  const body: ITimeLineBody = req.body;
 
   const meta = body.meta;
   const chart = body.chart;
@@ -36,13 +20,13 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const seriesLabel = Array.isArray(chart.seriesLabel) ? chart.seriesLabel : [ chart.seriesLabel];
   const seriesMappers = value.map(v => valueGetter(v, meta));
 
-  const data = req.body.data;
+  const data = body.data;
 
   const { minTime, maxTime, minVal, maxVal } = data.reduce((r,x) => {
     const t = getTimestamp(x);
     r.minTime = Math.min(t, r.minTime);
     r.maxTime = Math.max(t, r.maxTime);
-    const v : number[] = seriesMappers.map(mapper => mapper(x)); 
+    const v : number[] = seriesMappers.map(mapper => mapper(x)).filter((x: Number) => x != undefined); 
     r.minVal = Math.min(...[...v, r.minVal]);
     r.maxVal = Math.max(...[...v, r.maxVal]);
 
@@ -53,13 +37,13 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     minVal: chart.axis.referenceValue ?? Number.MAX_VALUE, 
     maxVal: chart.axis.referenceValue ?? Number.MIN_VALUE
   });
-  
+
   const dimDefaults = {
     padX: '2vmin',
     //padY: '1vmin', // commented: let's use padX as default
     labelFontSize: '2.5vmin',
     tickLength: '1.5vmin',
-    lineWidth: '2px',
+    lineWidth: '2px'
   };
   const dimensions = dimensionProxy(chart, dimDefaults, () => env0);
   const {
@@ -69,6 +53,14 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     lineWidth,
     tickLength,
   } = dimensions;
+
+  const legendDefaults = { lineWidth, sampleHeight: 0.65, sampleWidth: 0.65 };
+  const {
+    lineWidth: legendLineWidth,
+    sampleHeight,
+    sampleWidth = sampleHeight
+  } = dimensionProxy(chart.legend ?? {}, legendDefaults, () => env0);
+
   const { 
     labelFontFamily = 'Helvetica,"sans-serif"',
     months = 'Jan,Feb,Mar,Apr,May,Jun,Jul,Aug,Sep,Oct,Nov,Dec'.split(','),
@@ -100,8 +92,9 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
 
   const chartBox = box(0,0, canvas.width, canvas.height).insideBox(padX, padY).resolve(env0);
   const labelFont = `${labelFontSize.value()}px ${labelFontFamily}`
- 
-  const valueScaleU = d3.scaleLinear().domain([minVal, maxVal]);
+
+  const { valueScaleU, valueScaleTicks } = calculateScales(minVal, maxVal, valueTicks, chart.valueAxis?.nice, chart.valueAxis?.overshootTolerance);  
+
   const timeScaleU = d3.scaleTime().domain([minTime, maxTime])
 
   let timeScaleTicks: Array<Date>;
@@ -110,9 +103,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   } else {
     timeScaleTicks = timeScaleU.ticks(timeTicks);
   }
-
-  const valueScaleTicks = valueScaleU.ticks(valueTicks);
-
+  
   // set up label font
 
   context.font = labelFont;
@@ -142,7 +133,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   let xLabelBox: IBox;
   let yLabelBox: IBox;
   let plotBox: IBox;
-  let legendPosition: string;
+  let legendPosition: LegendPosition;
   if (timeAxisPosition === 'top') {
     let cornerPos = chartBox.topLeft().rightBy(valueAxisWidth).belowBy(timeAxisHeight);
     xLabelBox = box(cornerPos, chartBox.topRight()).resolve(env0);
@@ -160,8 +151,8 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const { textColor = '#000' } = chart.axis || {};
   const legendWidth = Math.abs(plotBox.width());
   const legendData = seriesLabel.map((label, idx) => ({ l: label, c: stroke[idx], v: null, vl: null }));
-  const legend = req.body.chart.showLegend && seriesLabel 
-               ? createLegend(canvas, legendData, LegendStyle.LINE, legendWidth, textColor)
+  const legend = chart.showLegend && seriesLabel 
+               ? createLegend(canvas, legendData, LegendStyle.LINE, legendWidth, textColor, 'center', legendPosition, false, null, sampleWidth.value(), sampleHeight.value(), legendLineWidth)
                : nullShape();
 
   let vhRange : number[];
@@ -177,7 +168,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
   const timeScale = timeScaleU.range(vwRange);
   
   for(let i = 0; i< seriesMappers.length; i++) {
-    const linePainter = d3.line().context(context);
+    const linePainter = d3.line().context(context as any);
 
     const getValue = seriesMappers[i];
     const line = linePainter
@@ -195,7 +186,7 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     context.stroke();
   }
 
-  const axisLine = d3.line().context(context)
+  const axisLine = d3.line().context(context as any)
   .x(d => d[0])
   .y(d => d[1]);
 
@@ -302,4 +293,40 @@ export function renderTimeline(req, canvas: c.Canvas, env0: IUnitFactors) {
     legend.paint(canvas);
   }
 
+}
+
+function calculateScales(minVal: number, maxVal: number, tickCount: number, nice: boolean, overshootTolerance?: boolean|number) {
+  let valueScaleU = d3.scaleLinear().domain([minVal, maxVal]);
+  if (nice) {
+    valueScaleU = valueScaleU.nice(tickCount);
+  }
+  let valueScaleTicks = valueScaleU.ticks(tickCount);
+
+  if (overshootTolerance === true) {
+    overshootTolerance = 0.5;
+  } else if (overshootTolerance === false) {
+    overshootTolerance = 0;
+  }
+
+  if (overshootTolerance > 0) {
+    const minTick = Math.min(...valueScaleTicks);
+    const maxTick = Math.max(...valueScaleTicks);
+    const delta = (maxTick - minTick) / ( valueScaleTicks.length -1); // assume equidistant ticks
+    let newMinVal = minVal;
+    let newMaxVal = maxVal;
+    if ((minTick-minVal) >= delta*overshootTolerance) {
+      newMinVal = minTick - delta;
+    }
+    if ((maxVal-maxTick) >= delta*overshootTolerance) {
+      newMaxVal = maxTick + delta;
+    }
+    if (newMinVal !== minVal || newMaxVal !== maxVal) {
+      console.log("adjusting min / max", minVal, newMinVal, maxVal, newMaxVal);
+      valueScaleU = d3.scaleLinear().domain([newMinVal, newMaxVal]);
+      valueScaleTicks = valueScaleU.ticks(tickCount);
+    } else {
+      console.log("min / max were fine?", minVal, newMinVal, maxVal, newMaxVal);
+    }
+  }
+  return { valueScaleU, valueScaleTicks };
 }
