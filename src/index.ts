@@ -115,7 +115,7 @@ function createImage(painter, [writer, type], req, res) {
     writer(canvas, res);
   }
   res.on('close', () => {
-    console.log(`responded in ${Date.now() - start}ms`);
+    console.log(`responded in ${Date.now() - start}ms (${painter.name}, ${width.value()}x${height.value()}, ${type}:${writer.name})`);
   });
 }
 
