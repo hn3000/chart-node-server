@@ -1,10 +1,10 @@
-FROM node:14-alpine3.13 as base
+FROM node:14-alpine3.13 AS base
 
 RUN npm config set unsafe-perm true
 
 RUN apk add --no-cache cairo jpeg pango giflib
 
-FROM base as builder
+FROM base AS builder
 
 RUN apk --update add --virtual build-dependencies python3 make gcc g++ \
  && npm install -g node-gyp
@@ -17,7 +17,7 @@ COPY package*.json ./
 
 RUN npm install --ci --ignore-optional --production=true --non-interactive
 
-FROM builder as compiler
+FROM builder AS compiler
 
 RUN npm install --ci --ignore-optional --non-interactive
 
@@ -29,7 +29,7 @@ RUN npm test
 
 RUN npm run tsc
 
-FROM base as runtime
+FROM base AS runtime
 
 RUN apk add --no-cache \
     ttf-freefont
