@@ -87,7 +87,7 @@ export function renderBar(body: IBarBody, canvas: c.Canvas, env0: IUnitFactors) 
     labelCurrency: valueLabelCurrency = labelCurrency,
   } = chart.valueAxis || {};
 
-  const { textColor = "#000" } = chart.axis || {};
+  const { textColor = labelColor } = chart.axis || {};
 
   const valueTicks = chart.valueAxis?.tickCount || 3;
 
