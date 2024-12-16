@@ -9,6 +9,9 @@ import { renderBar } from './painter-d3-barchart';
 import { UnitFactorsDefault, dimension, dimensionProxy } from './dimension';
 import { box, position } from './position';
 import { parseBoolean } from './util';
+import { RequestLogger } from './request-logger';
+
+let requestLog = new RequestLogger(7);
 
 function runServer(argv) {
   console.log("starting express");
@@ -30,6 +33,12 @@ function runServer(argv) {
       res.setHeader('Location', '/help-me/');
       res.sendStatus(301);
     }
+  });
+
+  app.get("/debug/req/:id", function(req, res) {
+    let id = req.params.id;
+    let item = requestLog.get(id);
+    res.status(item != null ? 200 : 404).json(item);
   });
 
   const styles = {
@@ -113,6 +122,11 @@ function createImage(painter, [writer, type], req, res) {
     painter(req.body, canvas, env0);
     maybeRenderWatermark(req, canvas, watermark, width, height, env0);
     writer(canvas, res);
+    let reqId = requestLog.add({
+      req: req.body,
+      res: canvas.toDataURL("image/jpeg", 0.5),
+    });
+    console.log(`request: ${reqId}`);
   }
   res.on('close', () => {
     console.log(`responded in ${Date.now() - start}ms (${painter.name}, ${width.value()}x${height.value()}, ${type}:${writer.name})`);
