@@ -162,7 +162,9 @@ export function renderPie(body: IPieBody, canvas: c.Canvas, env0: IUnitFactors) 
     .pie<IData>()
     .value(x => x.v)
     .padAngle(padAngle.value())
-    .startAngle(startAngle.value());
+    .startAngle(startAngle.value())
+    .sortValues(null)
+    .sort(null);
   const pie = makePie(data);
   let drawArc = d3
     .arc<PieArcDatum<IData>>()
