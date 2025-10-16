@@ -15,11 +15,11 @@ WORKDIR /chart-server
 
 COPY package*.json ./
 
-RUN npm install --ci --ignore-optional --omit=dev --non-interactive || sleep 3600 || return -1
+RUN npm ci --omit=optional --omit=dev #|| ( sleep 3600 && return -1 )
 
-FROM runtime as compiler
+FROM runtime AS compiler
 
-RUN npm install --ci --ignore-optional --non-interactive || sleep 3600
+RUN npm ci --omit=optional #|| ( sleep 3600 && return -1 )
 
 COPY tsconfig*.json ./
 COPY test/** ./test/
