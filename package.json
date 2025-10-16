@@ -1,6 +1,6 @@
 {
   "name": "chart-node-server",
-  "version": "0.1.2",
+  "version": "0.2.1",
   "description": "simple chart server based on node, d3 and canvas",
   "author": "Harald Niesche",
   "license": "BSD",
