@@ -1,4 +1,4 @@
-# docker-compose -f docker-compose-nowm.yml up -d --build
+# docker compose -f docker-compose-nowm.yml up -d --build
 # (nowm == no watermark)
 version: '3'
 services:
