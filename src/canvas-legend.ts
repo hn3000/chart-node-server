@@ -1,8 +1,9 @@
 
+import { IData } from './api.js';
+import { IPosition } from './position.js';
+import { IDimension } from './dimension.js';
+
 import * as c from 'canvas';
-import { IData } from './api';
-import { IPosition } from './position';
-import { IDimension } from './dimension';
 
 export interface IShape {
   width: number;
@@ -95,8 +96,8 @@ export function createTextShape(
   position: IPosition,
   text: string,
   font: string,
-  textBaseline: CanvasTextBaseline = 'alphabetic',
-  textAlign: CanvasTextAlign = 'left',
+  textBaseline: c.CanvasTextBaseline = 'alphabetic',
+  textAlign: c.CanvasTextAlign = 'left',
   rotateDeg: number = 0,
 ): IShape {
 

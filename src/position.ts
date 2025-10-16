@@ -1,5 +1,5 @@
 
-import { IDimension, IUnitFactors, dimension, DimensionSpec, dimensionF } from './dimension';
+import { IDimension, IUnitFactors, dimension, DimensionSpec, dimensionF } from './dimension.js';
 
 export interface IPosition {
     x() : number;
@@ -22,6 +22,8 @@ export interface IPosition {
 
     withLength(len: number): IPosition;
 
+    scaled(by: number): IPosition;
+
     resolve(env: IUnitFactors): this;
 
     xy(): [number, number];
@@ -30,6 +32,8 @@ export interface IPosition {
 
     quadrant(): number; // 0..3
     octant(): number; // 0..7
+
+    angle(): number; // angle in radian 0 .. 2pi
 
 }
 
@@ -56,6 +60,9 @@ export interface IBox {
     outsideBox(deltaX: DimensionSpec, deltaY?: DimensionSpec): IBox;
 
     resolve(env: IUnitFactors): this;
+
+    intersects(that: IBox): boolean;
+    intersection(that: IBox): IBox | null; // null if no intersection found
 }
 
 
@@ -113,6 +120,12 @@ abstract class PositionBase implements IPosition {
         return this._maybeResolve(result);
     }
 
+    scaled(by: number): IPosition {
+        const scale = x => x * by;
+        const result = position(scale(this.x()), scale(this.y()));
+        return this._maybeResolve(result);
+    }
+
     length() {
         return length(this.x(), this.y());
     }
@@ -165,6 +178,20 @@ abstract class PositionBase implements IPosition {
         const plusOne = (steep == evenQ) && !halfAngle;
 
         return 2*quadrant + (plusOne ? 1 : 0);
+    }
+
+    angle(): number {
+        let x = this.x();
+        let y = this.y();
+        let x0 = x === 0;
+        let y0 = y === 0;
+        if (x0 && y0) return NaN;
+
+        let result =  Math.atan2(x,y);
+        if (result < 0) {
+            result += Math.PI;
+        }
+        return result;
     }
 
 
@@ -318,6 +345,37 @@ export class Box implements IBox {
         return result;
     }
 
+    intersection(that: IBox): IBox | null {
+        let [ topA, leftA, bottomA, rightA ] = this.tlbr();
+        let [ topB, leftB, bottomB, rightB ] = that.tlbr();
+
+        let top = Math.max(topA, topB);
+        let bottom = Math.min(bottomA, bottomB);
+
+        let left = Math.max(leftA, leftB);
+        let right = Math.min(rightA, rightB);
+
+        if (top >= bottom || left >= right) {
+            return null;
+        }
+
+        let result = box(top, left, bottom, right);
+        if (this._env) {
+            result.resolve(this._env);
+        }
+        return result;
+    }
+
+    intersects(that: IBox): boolean {
+        let [ topA, leftA, bottomA, rightA ] = this.tlbr();
+        let [ topB, leftB, bottomB, rightB ] = that.tlbr();
+
+        let vertical = (topB < topA && topA < bottomB) || (topA < topB && topB < bottomA);
+        let horizontal = (leftB < leftA && leftA < rightB) || (leftA < leftB && leftB < rightA);
+
+        return vertical && horizontal;
+    }
+
     private _top: IDimension;
     private _left: IDimension;
     private _bottom: IDimension;
@@ -331,15 +389,23 @@ export class Box implements IBox {
 }
 
 export function box(left: DimensionSpec, top: DimensionSpec, right: DimensionSpec, bottom: DimensionSpec): IBox;
+export function box(pos: IPosition, width: DimensionSpec, height: DimensionSpec): IBox;
 export function box(pos1: IPosition, pos2: IPosition): IBox;
 export function box(): IBox {
     if (arguments.length === 2) {
         let [ pos1, pos2 ] = arguments;
         return new Box(pos1, pos2);
     }
+    if (arguments.length === 3) {
+        let [ center, width, height ] = arguments;
+        let diagonal = position(width, height).scaled(0.5);
+        let topLeft = center.minus(diagonal);
+        let bottomRight = center.plus(diagonal);
+        return new Box(topLeft, bottomRight);
+    }
     if (arguments.length === 4) {
         let [ left, top, right, bottom ] = arguments;
         return new Box(position(left, top), position(right, bottom));
     }
-    throw new Error('box must be called with 2 or 4 arguments, not '+arguments.length);
+    throw new Error('box must be called with 2, 3 or 4 arguments, not '+arguments.length);
 }

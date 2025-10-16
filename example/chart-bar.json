@@ -1,7 +1,7 @@
 {
   "chart": {
     "background": "#fff",
-    "width": 1000,
+    "width": 1400,
     "height": 700,
     "labelFontSize": "3vmin",
     "labelFontFamily": "Helvetica, sans-serif",
@@ -19,8 +19,8 @@
     "category": "c"
   },
   "data": [
-    { "l": "Deka-GlobalChampions CF", "c": "Test1", "v": 138.885 },
-    { "l": "Deka-GlobalChampions CF", "c": "Test", "v": 138.279 },
+    { "l": "Long-DashedNamePlus AB", "c": "Test1", "v": 138.885 },
+    { "l": "Long-DashedNamePlus AB", "c": "Test", "v": 138.279 },
     { "l": "Group2", "c": "Test1", "v": 140.96699999999998 },
     { "l": "Group2", "c": "Test", "v": 145.123 },
     { "l": "Group3", "c": "Test1", "v": 147.208 },

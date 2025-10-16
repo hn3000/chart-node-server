@@ -52,7 +52,7 @@ abstract class DimensionBase implements IDimension {
     return new DimensionRelative(this, dimension(delta).neg());
   }
 
-  resolve(env: IUnitFactors) {
+  resolve(env: IUnitFactors): IDimension {
     return new DimensionResolved(this, env);
   }
 
@@ -112,7 +112,7 @@ class DimensionResolved extends DimensionBase implements IDimension {
 
   resolve(env: IUnitFactors): IDimension {
     if (env === this._env) {
-      return this;
+      return this as IDimension;
     }
     return this._dim.resolve(env);
   }

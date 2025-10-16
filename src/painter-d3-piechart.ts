@@ -1,11 +1,12 @@
 import * as d3 from 'd3';
-import { IPieBody, IChartBody, IData, IChartSpec } from './api';
 import { PieArcDatum } from 'd3';
 import * as c from 'canvas';
-import { LegendStyle, createLegend, nullShape, ILegendShape, IShape } from './canvas-legend';
-import { IUnitFactors, dimensionProxy } from './dimension';
-import { position, box, IBox, IPosition } from './position';
-import { valueGetter } from './util';
+
+import { IPieBody, IChartBody, IData, IChartSpec } from './api.js';
+import { LegendStyle, createLegend, nullShape, ILegendShape, IShape } from './canvas-legend.js';
+import { IUnitFactors, dimensionProxy } from './dimension.js';
+import { position, box, IBox, IPosition } from './position.js';
+import { valueGetter } from './util.js';
 
 export function renderPie(body: IPieBody, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
@@ -177,6 +178,7 @@ export function renderPie(body: IPieBody, canvas: c.Canvas, env0: IUnitFactors) 
   //console.log(pie);
   //console.log('pos', pieBox.center().x(), pieBox.center().y());
   context.translate(pieBox.center().x(), pieBox.center().y());
+  let previousLabelBox: IBox = null;
   pie.forEach(x => {
     context.beginPath();
     drawArc(x);
@@ -218,7 +220,14 @@ export function renderPie(body: IPieBody, canvas: c.Canvas, env0: IUnitFactors) 
       }
       const labelR = labelRadius.value() + height;
       const labelPosition = centroidPosition.withLength(labelR);
-      const labelCenter = labelPosition.plus(labelDisp);
+      let labelCenter = labelPosition.plus(labelDisp);
+      let labelBox = box(labelCenter, width, height);
+      // todo: calculate amount of overlap and move only enough to avoid collision?
+      //if (null != previousLabelBox && labelBox.intersects(previousLabelBox)) {
+      //  labelCenter = labelCenter.plus(centroidPosition.withLength(height * 1.3));
+      //  labelBox = box(labelCenter, width, height);
+      //}
+      previousLabelBox = labelBox;
  
       context.fillText(labelTxt, ...labelCenter.xy());
       context.restore();

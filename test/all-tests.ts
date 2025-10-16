@@ -1,13 +1,13 @@
 
-import { DimensionTest } from './dimension-test';
-import { PositionTest } from './position-test';
-import { ParseBooleanTest } from './parse-boolean-test';
+import { DimensionTest } from './dimension-test.js';
+import { PositionTest } from './position-test.js';
+import { ParseBooleanTest } from './parse-boolean-test.js';
+import { D3TimeScaleTest } from './d3-time-scale-test.js';
 
 import {
   TestAsync,
   TestDescription
-} from "tsunit.external/tsUnitAsync";
-import { D3TimeScaleTest } from './d3-time-scale-test';
+} from "@hn3000/tsunit-async";
 
 function parmNum(t:TestDescription) {
   return (null != t.parameterSetNumber) ? `[${t.parameterSetNumber}]` : '';

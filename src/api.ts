@@ -1,5 +1,4 @@
-import { Axis } from "d3";
-import { CustomTimeInterval } from "./custom-time-intervals";
+import { CustomTimeInterval } from "./custom-time-intervals.js";
 
 export interface IChartMeta {
   [key:string]: string;
@@ -166,6 +165,7 @@ export interface IPieBody extends IChartBody {
     legendFontFamily?: string;
     legendPosition?: 'top' | 'bottom' | 'left' | 'right';
     legendSize?: string|number;
+    legendLineSpacing?: string|number;  // defaults to 2
     legendVerticalAlignment?: 'top' | 'middle' | 'bottom';
     legendItemPerRow?: boolean;
     showDebug?: boolean;

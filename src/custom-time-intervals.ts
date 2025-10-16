@@ -1,4 +1,4 @@
-import { TimeInterval, timeInterval, timeYear } from 'd3-time/';
+import { TimeInterval, timeInterval, timeYear } from 'd3-time';
 
 const floor = (d: Date) => {
   d.setMonth(d.getMonth() > 5 ? 6 : 0, 1);

@@ -1,11 +1,12 @@
+import { ITimeLineBody } from './api.js';
+import { LegendPosition, LegendStyle, createLegend, nullShape } from './canvas-legend.js';
+import { IUnitFactors, dimension, dimensionProxy } from './dimension.js';
+import * as TimeIntervals from './custom-time-intervals.js';
+import { box, IBox } from './position.js';
+import { valueGetter } from './util.js';
+
 import * as d3 from 'd3';
-import { ITimeLineBody } from './api';
 import * as c from 'canvas';
-import { LegendPosition, LegendStyle, createLegend, nullShape } from './canvas-legend';
-import { IUnitFactors, dimension, dimensionProxy } from './dimension';
-import * as TimeIntervals from './custom-time-intervals';
-import { box, IBox } from './position';
-import { valueGetter } from './util';
 
 export function renderTimeline(body: ITimeLineBody, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
@@ -120,7 +121,7 @@ export function renderTimeline(body: ITimeLineBody, canvas: c.Canvas, env0: IUni
     minimumFractionDigits: valueLabelPrecision,
     style: valueLabelStyle,
     currency: valueLabelCurrency
-  });
+  } as any);
 
   const valueScaleLabelWidth = valueScaleTicks.reduce((r,value) => {
     let label = valueFormat.format(value);
@@ -157,9 +158,9 @@ export function renderTimeline(body: ITimeLineBody, canvas: c.Canvas, env0: IUni
 
   let vhRange : number[];
   if (legendPosition === 'bottom') {
-    vhRange = [ plotBox.bottom() - legend?.height ?? 0  , plotBox.top() ];
+    vhRange = [ plotBox.bottom() - (legend?.height ?? 0)  , plotBox.top() ];
   } else {
-    vhRange = [ plotBox.bottom() , plotBox.top() + legend?.height ?? 0  ];
+    vhRange = [ plotBox.bottom() , plotBox.top() + (legend?.height ?? 0)  ];
   }
 
   const vwRange = [ plotBox.left(), plotBox.right() ];

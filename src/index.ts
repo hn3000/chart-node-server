@@ -1,15 +1,17 @@
-import * as c from 'canvas';
-import * as express from 'express';
-import * as path from 'path';
+import { renderPie } from './painter-d3-piechart.js';
+import { renderTimeline } from './painter-d3-timeline.js';
+import { renderScatter } from './painter-d3-scatter.js';
+import { renderBar } from './painter-d3-barchart.js';
+import { fontMetrics, fontMeasureText } from './font-metrics.js';
 
-import { renderPie } from './painter-d3-piechart';
-import { renderTimeline } from './painter-d3-timeline';
-import { renderScatter } from './painter-d3-scatter';
-import { renderBar } from './painter-d3-barchart';
-import { UnitFactorsDefault, dimension, dimensionProxy } from './dimension';
-import { box, position } from './position';
-import { parseBoolean } from './util';
-import { RequestLogger } from './request-logger';
+import { UnitFactorsDefault, dimension, dimensionProxy } from './dimension.js';
+import { box, position } from './position.js';
+import { parseBoolean } from './util.js';
+import { RequestLogger } from './request-logger.js';
+
+import * as c from 'canvas';
+import express from 'express';
+import * as path from 'path';
 
 let requestLog = new RequestLogger(7);
 
@@ -20,15 +22,15 @@ function runServer(argv) {
   app.use(express.json({limit: 1e6}));
 
   app.get("/", function(req, res) {
-    res.sendFile("index.html", { root: path.resolve(__dirname, '../assets') });
+    res.sendFile("index.html", { root: path.resolve(import.meta.dirname, '../assets') });
   });
   app.get("/help-me/example/:json", function(req, res) {
     //console.log(`GET ${req.params.json}`);
-    res.sendFile(req.params.json, { root: path.resolve(__dirname, '../example') });
+    res.sendFile(req.params.json, { root: path.resolve(import.meta.dirname, '../example') });
   });
   app.get("/help-me/", function(req, res) {
     if (req.originalUrl.endsWith('/')) {
-      res.sendFile("form.html", { root: path.resolve(__dirname, '../assets') });
+      res.sendFile("form.html", { root: path.resolve(import.meta.dirname, '../assets') });
     } else {
       res.setHeader('Location', '/help-me/');
       res.sendStatus(301);
@@ -213,13 +215,15 @@ function writeSVG(canvas: c.Canvas, res) {
   res.send(buffer);
 }
 
-const cluster = require('cluster');
-const numCPUs = require('os').cpus().length;
+import cluster from 'node:cluster';
+import * as os from 'node:os';
+
+const numCPUs = os.cpus().length;
 
 if (numCPUs == 1) {
   runServer(process.argv);
 } else {
-  if (cluster.isMaster) {
+  if (cluster.isPrimary) {
     console.log(`Master ${process.pid} is starting ${numCPUs} worker${numCPUs == 1 ? '' : 's'}`);
   
     // Fork workers.

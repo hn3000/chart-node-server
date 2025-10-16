@@ -1,12 +1,15 @@
-import * as d3 from 'd3';
-import { IChartBody, IChartSpec, IScatterChartBody } from './api';
-import * as c from 'canvas';
-import { LegendStyle, createLegend, nullShape, createTextShape, IShape } from './canvas-legend';
-import { IUnitFactors, dimension, dimensionProxy } from './dimension';
-import { box, IBox } from './position';
-import { valueGetter } from './util';
+import { IChartBody, IChartSpec, IScatterChartBody } from './api.js';
+import { LegendStyle, createLegend, nullShape, createTextShape, IShape } from './canvas-legend.js';
+import { IUnitFactors, dimension, dimensionProxy } from './dimension.js';
+import { box, IBox } from './position.js';
+import { valueGetter } from './util.js';
 
-require('@hn3000/canvas-5-polyfill');
+import * as d3 from 'd3';
+import * as c from 'canvas';
+
+import '@hn3000/canvas-5-polyfill';
+
+//require('@hn3000/canvas-5-polyfill');
 
 export function renderScatter(body: IScatterChartBody, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
@@ -222,13 +225,13 @@ export function renderScatter(body: IScatterChartBody, canvas: c.Canvas, env0: I
     minimumFractionDigits: 0,
     style: xLabelStyle,
     currency: xLabelCurrency
-  });
+  } as any);
   let valueFormatY = new Intl.NumberFormat(locale, { 
     maximumFractionDigits: yLabelPrecision, 
     minimumFractionDigits: 0,
     style: yLabelStyle,
     currency: yLabelCurrency
-  });
+  } as any);
 
   const valueScaleXLabelHeight = valueScaleXTicks.reduce((r,value) => {
     let label = valueFormatX.format(value);

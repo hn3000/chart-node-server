@@ -1,4 +1,4 @@
-import { TestClass } from "tsunit.external/tsUnitAsync";
+import { TestClass } from "@hn3000/tsunit-async";
 import * as d3 from 'd3';
 export class D3TimeScaleTest extends TestClass {
   testTicks() {

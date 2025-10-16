@@ -1,8 +1,8 @@
 
-import { position, box } from '../src/position';
+import { position, box } from '../src/position.js';
+import { UnitFactorsLength } from '../src/dimension.js';
 
-import { TestClass } from "tsunit.external/tsUnitAsync";
-import { UnitFactorsLength } from '../src/dimension';
+import { TestClass } from "@hn3000/tsunit-async";
 
 
 export class PositionTest extends TestClass {

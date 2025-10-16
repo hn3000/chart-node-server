@@ -1,6 +1,6 @@
-import { parseBoolean } from "../src/util";
+import { parseBoolean } from "../src/util.js";
 
-import { TestClass } from "tsunit.external/tsUnitAsync";
+import { TestClass } from "@hn3000/tsunit-async";
 
 export class ParseBooleanTest extends TestClass {
   constructor() {

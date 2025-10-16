@@ -1,10 +1,10 @@
-FROM node:14-alpine3.13 AS base
+FROM node:20-alpine AS base
 
-RUN npm config set unsafe-perm true
+# RUN npm config set unsafe-perm true
 
 RUN apk add --no-cache cairo jpeg pango giflib
 
-FROM base AS builder
+FROM base AS runtime
 
 RUN apk --update add --virtual build-dependencies python3 make gcc g++ \
  && npm install -g node-gyp
@@ -15,11 +15,11 @@ WORKDIR /chart-server
 
 COPY package*.json ./
 
-RUN npm install --ci --ignore-optional --production=true --non-interactive
+RUN npm install --ci --ignore-optional --omit=dev --non-interactive || sleep 3600 || return -1
 
-FROM builder AS compiler
+FROM runtime as compiler
 
-RUN npm install --ci --ignore-optional --non-interactive
+RUN npm install --ci --ignore-optional --non-interactive || sleep 3600
 
 COPY tsconfig*.json ./
 COPY test/** ./test/
@@ -29,14 +29,14 @@ RUN npm test
 
 RUN npm run tsc
 
-FROM base AS runtime
+FROM base as run
 
 RUN apk add --no-cache \
     ttf-freefont
 
 WORKDIR /chart-server
 
-COPY --from=builder /chart-server/ .
+COPY --from=runtime /chart-server/ .
 COPY --from=compiler /chart-server/out ./out/
 
 COPY assets/* ./assets/

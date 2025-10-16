@@ -1,10 +1,11 @@
+import { IBarBody } from "./api.js";
+import { valueGetter } from "./util.js";
+import { Box, box, IBox } from "./position.js";
+import { IUnitFactors, dimension, dimensionProxy } from "./dimension.js";
+import { createLegend, IShape, LegendStyle, nullShape } from "./canvas-legend.js";
+
 import * as c from "canvas";
 import * as d3 from "d3";
-import { IBarBody } from "./api";
-import { valueGetter } from "./util";
-import { Box, box, IBox } from "./position";
-import { IUnitFactors, dimension, dimensionProxy } from "./dimension";
-import { createLegend, IShape, LegendStyle, nullShape } from "./canvas-legend";
 
 export function renderBar(body: IBarBody, canvas: c.Canvas, env0: IUnitFactors) {
   const context = canvas.getContext("2d");
@@ -96,7 +97,7 @@ export function renderBar(body: IBarBody, canvas: c.Canvas, env0: IUnitFactors) 
     minimumFractionDigits: valueLabelPrecision,
     style: valueLabelStyle,
     currency: valueLabelCurrency,
-  });
+  } as any);
 
   const labelFont = `${labelFontSize.value()}px ${labelFontFamily}`;
 

@@ -1,4 +1,4 @@
-import { IChartMeta } from "./api";
+import { IChartMeta } from "./api.js";
 
 export function parseBoolean(v: any): boolean {
   switch (v) {
