@@ -2,7 +2,6 @@ import { renderPie } from './painter-d3-piechart.js';
 import { renderTimeline } from './painter-d3-timeline.js';
 import { renderScatter } from './painter-d3-scatter.js';
 import { renderBar } from './painter-d3-barchart.js';
-import { fontMetrics, fontMeasureText } from './font-metrics.js';
 
 import { UnitFactorsDefault, dimension, dimensionProxy } from './dimension.js';
 import { box, position } from './position.js';
