@@ -2,6 +2,7 @@ import { renderPie } from './painter-d3-piechart.js';
 import { renderTimeline } from './painter-d3-timeline.js';
 import { renderScatter } from './painter-d3-scatter.js';
 import { renderBar } from './painter-d3-barchart.js';
+import { fontMetrics, fontMeasureText } from './font-metrics.js';
 
 import { UnitFactorsDefault, dimension, dimensionProxy } from './dimension.js';
 import { box, position } from './position.js';
@@ -34,6 +35,34 @@ function runServer(argv) {
       res.setHeader('Location', '/help-me/');
       res.sendStatus(301);
     }
+  });
+
+  app.get("/font/:font/:size/metrics", function(req, res) {
+    const font = req.params.font;
+    const size = Number.parseFloat(req.params.size);
+    let canvas = new c.Canvas(100, 100, 'image');
+    let metrics = fontMetrics(canvas, font, size);
+    res.contentType('application/json');
+    res.send(JSON.stringify(metrics));
+  });
+
+  app.post("/font/:font/:size/measure/", function(req, res) {
+    const font = req.params.font;
+    const size = Number.parseFloat(req.params.size);
+
+    const text = req.body;
+
+    if (text.length > 1000) {
+      res.sendStatus(420);
+    }
+
+    //console.log('app.post("/font/:font/:size/measure"): ',req.path, req.params, req.headers['content-type'], req.body);
+
+    let canvas = new c.Canvas(100, 100, 'image');
+
+    let metrics = fontMeasureText(canvas, font, size, text);
+    res.contentType('application/json');
+    res.send(JSON.stringify(metrics));
   });
 
   app.get("/debug/req/:id", function(req, res) {
