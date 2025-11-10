@@ -252,7 +252,7 @@ if (numCPUs == 1) {
   runServer(process.argv);
 } else {
   if (cluster.isPrimary) {
-    console.log(`Master ${process.pid} is starting ${numCPUs} worker${numCPUs == 1 ? '' : 's'}`);
+    console.log(`Primary ${process.pid} is starting ${numCPUs} worker${numCPUs == 1 ? '' : 's'}`);
   
     // Fork workers.
     for (let i = 0; i < numCPUs; i++) {
