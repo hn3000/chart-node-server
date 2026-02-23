@@ -29,7 +29,7 @@ RUN npm test
 
 RUN npm run tsc
 
-FROM base as run
+FROM base AS run
 
 RUN apk add --no-cache \
     ttf-freefont
@@ -49,4 +49,6 @@ COPY example/chart-*json ./example/
 EXPOSE 3456
 EXPOSE 3457
 
-CMD node --icu-data-dir=node_modules/full-icu out/index.js
+CMD [ "node", "--icu-data-dir=node_modules/full-icu", "out/index.js" ]
+#CMD [ "/usr/local/bin/node", "--icu-data-dir=node_modules/full-icu", "out/index.js" ]
+#CMD node --icu-data-dir=node_modules/full-icu out/index.js
