@@ -1,6 +1,6 @@
 {
   "name": "chart-node-server",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "simple chart server based on node, d3 and canvas",
   "author": "Harald Niesche",
   "license": "BSD",
@@ -31,18 +31,18 @@
     "api"
   ],
   "dependencies": {
-    "canvas": "^3.2.0",
     "@hn3000/canvas-5-polyfill": "^0.1.5-hn3",
+    "canvas": "^3.2.0",
     "d3": "^7.9.0",
     "express": "^5.2.1",
     "full-icu": "^1.5.0"
   },
   "devDependencies": {
+    "@hn3000/tsunit-async": "^2.0.0",
     "@types/d3": "^7.4.3",
     "@types/express": "^5.0.6",
+    "c8": "^11.0.0",
     "nodemon": "^3.1.11",
-    "c8": "^10.1.3",
-    "@hn3000/tsunit-async": "^2.0.0",
     "typescript": "^5.9.3"
   },
   "c8": {
