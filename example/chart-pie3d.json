@@ -1,0 +1,42 @@
+{
+  "data": [
+    { "v": 30, "l": "Produkt Anton",    "vl": "30,00%" },
+    { "v": 20, "l": "Produkt Berta",    "vl": "20,00%" },
+    { "v": 4, "l": "Produkt Dora",      "vl": "4,00%" },
+    { "v": 2, "l": "Produkt Emma",      "vl": "2,00%" },
+    { "v": 4, "l": "Produkt Flora",     "vl": "4,00%" },
+    { "v": 15, "l": "Produkt Caesar",   "vl": "15,00%" },
+    { "v": 15, "l": "Produkt Gemma",    "vl": "15,00%" },
+    { "v": 10, "l": "Produkt Hertha",   "vl": "10,00%" }
+  ],
+  "meta": {
+    "value": "v",
+    "label": "vl",
+    "legend": "l"
+  },
+  "chart": {
+    "showLabelDebug": true,
+    "labelFontSize": "2vmin",
+    "background": "#fff",
+    "width": 500,
+    "height": 700,
+    "cornerRadius": 0,
+    "innerRadius": 0,
+    "outerRadius": "35vmin",
+    "lineWidth": 2,
+    "stroke": "#fff",
+    "colors": [
+      "rgb(0,0,0)",
+      "rgb(167,167,166)",
+      "rgb(214,214,213)",
+      "rgb(201,190,184)",
+      "rgb(236,218,184)"
+    ],
+    "legendSample": 1,
+    "legendSize": "40vw",
+    "legendFontSize": "2.5vw",
+    "legendPosition": "bottom",
+    "legendAlignment": "bottom",
+    "legendVerticalAlignment": "middle"
+  }
+}
