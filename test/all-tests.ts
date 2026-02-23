@@ -3,6 +3,7 @@ import { DimensionTest } from './dimension-test.js';
 import { PositionTest } from './position-test.js';
 import { ParseBooleanTest } from './parse-boolean-test.js';
 import { D3TimeScaleTest } from './d3-time-scale-test.js';
+import { RequestLoggerTest } from './request-logger-test.js';
 
 import {
   TestAsync,
@@ -20,6 +21,7 @@ export function runTests() {
   test.addTestClass(new DimensionTest(), 'DimensionTest');
   test.addTestClass(new PositionTest(), 'PositionTest');
   test.addTestClass(new ParseBooleanTest(), 'ParseBooleanTest');
+  test.addTestClass(new RequestLoggerTest(), 'RequestLoggerTest');
 
   let promise = test.runAsync();
   promise.then((result) => {

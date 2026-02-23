@@ -7,10 +7,29 @@ export interface RequestLogEntry {
 export class RequestLogger {
   constructor(length: number) {
     this._ringbuffer = new Array<RequestLogEntry>(length);
+    this._secret = this.newId('asdf-'+(Math.random()*1e12).toString(36)+'-');
   }
 
   public get(id: string): RequestLogEntry {
     return this._ringbuffer.filter(x => x.id === id)[0];
+  }
+
+  public getIds(secret: string): string[] {
+    let result = [] as string[];
+    if (secret == this._secret) {
+      const buf = this._ringbuffer;
+      const length = buf.length;
+      const start = this._current;
+      let idx = start + length - 1;
+      while (idx >= start) {
+        const thisOne = buf[idx % length];
+        if (null != thisOne && null != thisOne.id) {
+          result.push(thisOne.id);
+        }
+        --idx;
+      }
+    }
+    return result;
   }
 
   public add(data: any): string {
@@ -28,6 +47,7 @@ export class RequestLogger {
     return prefix+(this._idCounter++) + (Math.random()*1e8).toString(36);
   }
 
+  _secret: string;
   _ringbuffer: RequestLogEntry[];
   _current = 0;
   _idCounter = 0;

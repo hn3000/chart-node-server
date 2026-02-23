@@ -13,7 +13,9 @@ import * as c from 'canvas';
 import express from 'express';
 import * as path from 'path';
 
-let requestLog = new RequestLogger(7);
+const enableDebug = ('1' === process.env['DEBUG']);
+
+let requestLog = enableDebug ? new RequestLogger(7) : null;
 
 function runServer(argv) {
   console.log("starting express");
@@ -65,11 +67,43 @@ function runServer(argv) {
     res.send(JSON.stringify(metrics));
   });
 
-  app.get("/debug/req/:id", function(req, res) {
-    let id = req.params.id;
-    let item = requestLog.get(id);
-    res.status(item != null ? 200 : 404).json(item);
-  });
+  if (enableDebug) {
+    app.get("/debug/req/:id/json", function(req, res) {
+      let id = req.params.id;
+      let item = requestLog.get(id);
+      res.status(item != null ? 200 : 404).json(item);
+    });
+    app.get("/debug/req/:id", function(req, res) {
+      let id = req.params.id;
+      let item = requestLog.get(id);
+      res.status(item != null ? 200 : 404)
+      let html = '<p>not found</p>';
+      if (null != item) {
+        html = `
+        <section>
+          <div>
+            <img src="${item.data.res}">
+          </div>
+          <div>
+            <code><pre>
+${JSON.stringify(item.data.req, null, 4)}
+            </pre></code>
+          </div>
+        </section>
+        `;
+      }
+      res.send(html);
+    });
+
+    app.get("/debug/req/ids/:id", function(req, res) {
+      let id = req.params.id;
+      let items = requestLog.getIds(id);
+      let page = '\r\n\r\n<ul>' + items.map(x => `<li><a href="/debug/req/${x}">${x}</a></li>`);
+      res.status(200);
+      res.contentType('text/html');
+      res.send(page);
+    });
+  }
 
   const styles = {
     pie: renderPie,
@@ -152,11 +186,13 @@ function createImage(painter, [writer, type], req, res) {
     painter(req.body, canvas, env0);
     maybeRenderWatermark(req, canvas, watermark, width, height, env0);
     writer(canvas, res);
-    let reqId = requestLog.add({
-      req: req.body,
-      res: canvas.toDataURL("image/jpeg", 0.5),
-    });
-    console.log(`request: ${reqId}`);
+    if (null != requestLog) {
+      let reqId = requestLog.add({
+        req: req.body,
+        res: canvas.toDataURL("image/jpeg", 0.5),
+      });
+      console.log(`request: ${reqId} /debug/req/${reqId}  /debug/req/ids/${requestLog._secret}`);
+    }
   }
   res.on('close', () => {
     console.log(`responded in ${Date.now() - start}ms (${painter.name}, ${width.value()}x${height.value()}, ${type}:${writer.name})`);
@@ -247,12 +283,29 @@ import cluster from 'node:cluster';
 import * as os from 'node:os';
 
 const numCPUs = os.cpus().length;
+let parallelism = (null != os.availableParallelism)
+                ? os.availableParallelism()
+                : os.cpus().length
+                ;
 
-if (numCPUs == 1) {
+console.log(`parallelism: ${parallelism}, numCPUs: ${numCPUs}`);
+
+if (process.env['WORKERS']) {
+  let workers = Number(process.env['WORKERS']);
+  console.log(`env var WORKERS set parallelism to ${workers} instead of ${parallelism} (or number of cpus ${numCPUs})`);
+  parallelism = workers;
+}
+
+if (enableDebug) {
+  console.log(`env var DEBUG set to 1, running single-threaded instead of ${parallelism} threads (on ${numCPUs} cpus), request logger ${requestLog?'exists':'missing'}`);
+  parallelism = 1;
+}
+
+if (parallelism == 1) {
   runServer(process.argv);
 } else {
   if (cluster.isPrimary) {
-    console.log(`Primary ${process.pid} is starting ${numCPUs} worker${numCPUs == 1 ? '' : 's'}`);
+    console.log(`Primary ${process.pid} is starting ${parallelism} worker${parallelism == 1 ? '' : 's'}`);
   
     // Fork workers.
     for (let i = 0; i < numCPUs; i++) {
